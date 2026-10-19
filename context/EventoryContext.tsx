@@ -3,7 +3,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { 
   EventItem, VendorItem, ActiveWorkspace, WorkspaceGuest, WorkspaceTask, 
-  WorkspaceInvoice, WorkspaceQuote, WorkspaceChatMessage, VendorEnquiry, VendorBooking 
+  WorkspaceInvoice, WorkspaceQuote, WorkspaceChatMessage, VendorEnquiry, VendorBooking,
+  UserRole, UserProfile 
 } from '../types';
 import { 
   INITIAL_EVENTS, INITIAL_VENDORS, INITIAL_WORKSPACE, 
@@ -29,6 +30,9 @@ export interface ConfirmedTicketData {
 }
 
 interface EventoryContextType {
+  currentUser: UserProfile;
+  setCurrentUser: React.Dispatch<React.SetStateAction<UserProfile>>;
+  setCurrentUserRole: (role: UserRole) => void;
   events: EventItem[];
   vendors: VendorItem[];
   workspace: ActiveWorkspace;
@@ -64,9 +68,18 @@ interface EventoryContextType {
   registerVendor: (newVendor: VendorItem) => void;
 }
 
+const DEFAULT_USER: UserProfile = {
+  id: 'usr-001',
+  name: 'Ezekiel Adeleke',
+  email: 'ezekiel@eventory.nexus',
+  role: 'creator',
+  organizationName: 'Eventory Nexus Limited'
+};
+
 const EventoryContext = createContext<EventoryContextType | undefined>(undefined);
 
 export function EventoryProvider({ children }: { children: React.ReactNode }) {
+  const [currentUser, setCurrentUser] = useState<UserProfile>(DEFAULT_USER);
   const [events, setEvents] = useState<EventItem[]>(INITIAL_EVENTS);
   const [vendors, setVendors] = useState<VendorItem[]>(INITIAL_VENDORS);
   const [workspace, setWorkspace] = useState<ActiveWorkspace>(INITIAL_WORKSPACE);
@@ -75,6 +88,11 @@ export function EventoryProvider({ children }: { children: React.ReactNode }) {
   const [activeTicketModal, setActiveTicketModal] = useState<EventItem | null>(null);
   const [lastConfirmedTicket, setLastConfirmedTicket] = useState<ConfirmedTicketData | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const setCurrentUserRole = (role: UserRole) => {
+    setCurrentUser((prev) => ({ ...prev, role }));
+    showToast(`Switched active view to ${role === 'creator' ? 'Event Creator' : role === 'vendor' ? 'Vendor' : 'Attendee'}`);
+  };
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -336,6 +354,9 @@ export function EventoryProvider({ children }: { children: React.ReactNode }) {
   return (
     <EventoryContext.Provider
       value={{
+        currentUser,
+        setCurrentUser,
+        setCurrentUserRole,
         events,
         vendors,
         workspace,

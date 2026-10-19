@@ -23,8 +23,8 @@ export default function LoginPage() {
     setIsSubmitting(true);
     setTimeout(() => {
       setIsSubmitting(false);
-      // Redirect to organiser workspace or discovery
-      router.push('/organiser');
+      // Redirect to dashboard based on role
+      router.push('/dashboard');
     }, 700);
   };
 

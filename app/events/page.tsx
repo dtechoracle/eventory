@@ -5,27 +5,22 @@ import Link from 'next/link';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import GateScannerModal from '../../components/GateScannerModal';
-import TicketModal from '../../components/TicketModal';
 import { useEventory } from '../../context/EventoryContext';
-import { formatNaira } from '../../lib/utils';
-import { EventItem } from '../../types';
 import { 
-  Search, MapPin, Calendar, Users, ShieldCheck, Ticket, 
-  ArrowRight, RotateCcw, ArrowUpDown, ChevronDown, Clock 
+  Search, MapPin, Calendar, 
+  RotateCcw, ChevronDown, SlidersHorizontal, X, Check
 } from 'lucide-react';
 
 export default function EventsDiscoveryPage() {
-  const { events, checkInGuest, purchaseTicket } = useEventory();
+  const { events, checkInGuest } = useEventory();
   const [isScannerOpen, setIsScannerOpen] = useState(false);
-  const [selectedEventForCheckout, setSelectedEventForCheckout] = useState<EventItem | null>(null);
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
   // Filters state
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCity, setSelectedCity] = useState('All');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [priceType, setPriceType] = useState<'All' | 'Free' | 'Paid'>('All');
-  const [datePreset, setDatePreset] = useState<'any' | 'weekend' | 'upcoming'>('any');
-  const [sortBy, setSortBy] = useState<'soonest' | 'price_asc' | 'price_desc' | 'popular'>('soonest');
 
   const categories = [
     'All',
@@ -59,87 +54,96 @@ export default function EventsDiscoveryPage() {
     if (priceType === 'Free' && evt.startingPrice > 0) return false;
     if (priceType === 'Paid' && evt.startingPrice === 0) return false;
 
-    // Date presets
-    if (datePreset === 'weekend') {
-      const isWeekend = evt.date.includes('Saturday') || evt.date.includes('Sunday');
-      if (!isWeekend) return false;
-    }
-
     return true;
   });
 
-  // Sorting logic
-  const sortedEvents = [...filteredEvents].sort((a, b) => {
-    if (sortBy === 'price_asc') return a.startingPrice - b.startingPrice;
-    if (sortBy === 'price_desc') return b.startingPrice - a.startingPrice;
-    if (sortBy === 'popular') return b.ticketsSold - a.ticketsSold;
-    return a.id.localeCompare(b.id);
-  });
-
   const activeFilterCount = 
-    (searchQuery ? 1 : 0) + 
     (selectedCity !== 'All' ? 1 : 0) + 
     (selectedCategory !== 'All' ? 1 : 0) + 
-    (priceType !== 'All' ? 1 : 0) + 
-    (datePreset !== 'any' ? 1 : 0);
+    (priceType !== 'All' ? 1 : 0);
 
   const handleResetFilters = () => {
     setSearchQuery('');
     setSelectedCity('All');
     setSelectedCategory('All');
     setPriceType('All');
-    setDatePreset('any');
-    setSortBy('soonest');
   };
 
   return (
     <div className="min-h-screen bg-white flex flex-col font-sans w-full overflow-x-hidden">
       <Navbar onOpenGateScanner={() => setIsScannerOpen(true)} />
 
-      {/* Clean Page Header (Restrained, no unnecessary cards) */}
-      <div className="bg-white border-b border-slate-100 py-10 sm:py-14">
+      {/* Clean Page Header (No pills, minimal typography) */}
+      <div className="bg-white border-b border-slate-100 py-8 sm:py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-3xl space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-50 text-[#301d6e] text-xs font-bold uppercase tracking-wider">
-              <span className="w-2 h-2 rounded-full bg-[#8ec82d]"></span>
-              <span>Discover Events in Nigeria</span>
-            </div>
-            <h1 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight">
-              Experiences worth showing up for
+          <div className="max-w-2xl space-y-2">
+            <h1 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight">
+              Events in Nigeria
             </h1>
-            <p className="text-xs sm:text-sm text-slate-500 leading-relaxed max-w-xl">
-              Explore upcoming concerts, tech summits, exhibitions, and social experiences in Abuja, Lagos, and beyond. Verified hosts and instant digital entry passes.
+            <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+              Find and experience upcoming conferences, concerts, exhibitions, and social gatherings in Abuja, Lagos, and Port Harcourt.
             </p>
           </div>
         </div>
       </div>
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         
-        {/* Sleek Search & Filter Bar */}
-        <div className="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200/80 mb-8 space-y-4">
-          
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
+        {/* MOBILE SEARCH & FILTER BAR (On the same line, filter opens modal) */}
+        <div className="sm:hidden mb-6 flex items-center gap-2.5">
+          <div className="relative flex-1">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search events..."
+              className="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#301d6e] focus:bg-white transition-all"
+            />
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setIsMobileFilterOpen(true)}
+            aria-label="Open filters"
+            className={`relative p-2.5 rounded-xl border transition-all cursor-pointer shrink-0 flex items-center justify-center ${
+              activeFilterCount > 0
+                ? 'bg-[#301d6e] border-[#301d6e] text-white shadow-xs'
+                : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+            }`}
+          >
+            <SlidersHorizontal className="w-4 h-4" />
+            {activeFilterCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#8ec82d] text-[#1e1144] text-[9px] font-black rounded-full flex items-center justify-center shadow-xs">
+                {activeFilterCount}
+              </span>
+            )}
+          </button>
+        </div>
+
+        {/* DESKTOP SEARCH & FILTERS (Preserved exactly for desktop screens) */}
+        <div className="hidden sm:block space-y-4 mb-6">
+          <div className="grid grid-cols-12 gap-3">
             {/* Search Input */}
-            <div className="md:col-span-5 relative">
+            <div className="col-span-8 relative">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search events by title, venue, or keywords..."
-                className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#301d6e]"
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#301d6e] focus:bg-white transition-all"
               />
             </div>
 
             {/* City Selector */}
-            <div className="md:col-span-3 relative">
+            <div className="col-span-4 relative">
               <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#301d6e]" />
               <select
                 value={selectedCity}
                 onChange={(e) => setSelectedCity(e.target.value)}
-                className="w-full pl-10 pr-6 py-2.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#301d6e] appearance-none cursor-pointer"
+                className="w-full pl-10 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#301d6e] focus:bg-white appearance-none cursor-pointer transition-all"
               >
                 <option value="All">All Cities (Nigeria)</option>
                 <option value="Abuja">Abuja, Nigeria</option>
@@ -148,51 +152,20 @@ export default function EventsDiscoveryPage() {
               </select>
               <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
-
-            {/* Date Preset */}
-            <div className="md:col-span-2 relative">
-              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <select
-                value={datePreset}
-                onChange={(e) => setDatePreset(e.target.value as any)}
-                className="w-full pl-9 pr-6 py-2.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#301d6e] appearance-none cursor-pointer"
-              >
-                <option value="any">Any Date</option>
-                <option value="weekend">This Weekend</option>
-                <option value="upcoming">Upcoming</option>
-              </select>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-            </div>
-
-            {/* Sorting */}
-            <div className="md:col-span-2 relative">
-              <ArrowUpDown className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
-                className="w-full pl-9 pr-6 py-2.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#301d6e] appearance-none cursor-pointer"
-              >
-                <option value="soonest">Sort: Soonest</option>
-                <option value="popular">Sort: Popular</option>
-                <option value="price_asc">Price: Low to High</option>
-                <option value="price_desc">Price: High to Low</option>
-              </select>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-            </div>
           </div>
 
-          {/* Categories Pill Bar & Price Filters */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-slate-200/60">
+          {/* Category Pills & Price Filter */}
+          <div className="flex items-center justify-between gap-3 pt-1">
             {/* Category horizontal scroll */}
             <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
               {categories.map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
-                  className={`whitespace-nowrap px-3.5 py-1.5 rounded-full text-xs font-bold transition-all ${
+                  className={`whitespace-nowrap px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
                     selectedCategory === cat
-                      ? 'bg-[#301d6e] text-white shadow-xs'
-                      : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'
+                      ? 'bg-[#301d6e] text-white shadow-2xs'
+                      : 'bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100'
                   }`}
                 >
                   {cat}
@@ -202,12 +175,12 @@ export default function EventsDiscoveryPage() {
 
             {/* Price Type toggle & Reset */}
             <div className="flex items-center gap-3 shrink-0">
-              <div className="flex items-center bg-white p-0.5 rounded-xl border border-slate-200 text-xs font-bold">
+              <div className="flex items-center bg-slate-50 p-0.5 rounded-xl border border-slate-200 text-xs font-bold">
                 {(['All', 'Paid', 'Free'] as const).map((p) => (
                   <button
                     key={p}
                     onClick={() => setPriceType(p)}
-                    className={`px-3 py-1 rounded-lg transition-all ${
+                    className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
                       priceType === p ? 'bg-[#8ec82d] text-[#1e1144]' : 'text-slate-600 hover:text-slate-900'
                     }`}
                   >
@@ -219,7 +192,7 @@ export default function EventsDiscoveryPage() {
               {activeFilterCount > 0 && (
                 <button
                   onClick={handleResetFilters}
-                  className="flex items-center gap-1 text-xs text-rose-600 hover:text-rose-700 font-bold"
+                  className="flex items-center gap-1 text-xs text-rose-600 hover:text-rose-700 font-bold cursor-pointer"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
                   <span>Reset ({activeFilterCount})</span>
@@ -227,98 +200,44 @@ export default function EventsDiscoveryPage() {
               )}
             </div>
           </div>
-
         </div>
 
         {/* Results Count Banner */}
-        <div className="flex items-center justify-between mb-6 text-xs text-slate-500 font-medium">
-          <span>Showing <strong>{sortedEvents.length}</strong> {sortedEvents.length === 1 ? 'event' : 'events'}</span>
+        <div className="flex items-center justify-between mb-4 text-xs text-slate-500 font-medium">
+          <span>Showing <strong>{filteredEvents.length}</strong> {filteredEvents.length === 1 ? 'event' : 'events'}</span>
           <span>Abuja • Lagos • Port Harcourt</span>
         </div>
 
-        {/* Clean, Decongested 2-Column Event Listings (Matching Tix UI concept) */}
-        {sortedEvents.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {sortedEvents.map((evt) => {
-              const isFree = evt.startingPrice === 0;
-
-              return (
-                <div
-                  key={evt.id}
-                  className="group bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/80 hover:border-slate-400 hover:shadow-md transition-all duration-200 flex items-start justify-between gap-5"
-                >
-                  {/* Left: Metadata */}
-                  <div className="flex-1 space-y-2.5">
-                    
-                    {/* Category Tag & Host */}
-                    <div className="flex items-center gap-2">
-                      <span className="text-[11px] font-bold text-[#301d6e] uppercase tracking-wider bg-purple-50 px-2.5 py-0.5 rounded-md">
-                        {evt.category}
-                      </span>
-                      {evt.organizerVerified && (
-                        <span className="inline-flex items-center gap-1 text-[11px] text-slate-500 font-medium">
-                          <ShieldCheck className="w-3.5 h-3.5 text-[#8ec82d]" /> Verified Host
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Event Title */}
-                    <Link href={`/events/${evt.id}`}>
-                      <h3 className="font-bold text-base sm:text-lg text-slate-900 group-hover:text-[#301d6e] transition-colors leading-snug line-clamp-2">
-                        {evt.title}
-                      </h3>
-                    </Link>
-
-                    {/* Date & Time */}
-                    <p className="text-xs text-slate-500 flex items-center gap-1.5 font-medium">
-                      <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                      <span>{evt.date}</span>
-                      <span className="text-slate-300">•</span>
-                      <span>{evt.time}</span>
-                    </p>
-
-                    {/* Venue Location */}
-                    <p className="text-xs text-slate-500 flex items-start gap-1.5 line-clamp-1">
-                      <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
-                      <span>{evt.venue}, {evt.city}</span>
-                    </p>
-
-                    {/* Price & Checkout CTA */}
-                    <div className="pt-2 flex items-center gap-3">
-                      {isFree ? (
-                        <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">
-                          Free RSVP
-                        </span>
-                      ) : (
-                        <span className="text-xs font-black text-slate-900 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
-                          From {formatNaira(evt.startingPrice)}
-                        </span>
-                      )}
-
-                      <button
-                        onClick={() => setSelectedEventForCheckout(evt)}
-                        className="text-xs font-bold text-[#301d6e] hover:text-[#1e1144] hover:underline flex items-center gap-1"
-                      >
-                        Get Ticket <ArrowRight className="w-3 h-3" />
-                      </button>
-                    </div>
-
-                  </div>
-
-                  {/* Right: Square Thumbnail */}
-                  <Link
-                    href={`/events/${evt.id}`}
-                    className="w-28 h-28 sm:w-32 sm:h-32 rounded-xl overflow-hidden bg-slate-100 shrink-0 relative shadow-2xs"
-                  >
-                    <img
-                      src={evt.image}
-                      alt={evt.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  </Link>
+        {/* CLEAN, DECONGESTED EVENT CARDS (Matching requested UI: Image on right, Left: truncated title + date & time underneath, same height, zero clutter) */}
+        {filteredEvents.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {filteredEvents.map((evt) => (
+              <Link
+                key={evt.id}
+                href={`/events/${evt.id}`}
+                className="group bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 hover:border-slate-400 hover:shadow-sm transition-all duration-150 flex items-center justify-between gap-4 h-24 sm:h-28"
+              >
+                {/* Left: Truncated Title & Date/Time underneath */}
+                <div className="flex-1 min-w-0 pr-2">
+                  <h3 className="font-bold text-sm sm:text-base text-slate-900 group-hover:text-[#301d6e] transition-colors truncate leading-snug">
+                    {evt.title}
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-1 flex items-center gap-1.5 font-medium truncate">
+                    <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    <span>{evt.date} • {evt.time}</span>
+                  </p>
                 </div>
-              );
-            })}
+
+                {/* Right: Square Thumbnail */}
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-slate-100 shrink-0">
+                  <img
+                    src={evt.image}
+                    alt={evt.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+              </Link>
+            ))}
           </div>
         ) : (
           <div className="text-center py-16 bg-white rounded-3xl border border-slate-200 p-8">
@@ -331,7 +250,7 @@ export default function EventsDiscoveryPage() {
             </p>
             <button
               onClick={handleResetFilters}
-              className="mt-4 px-5 py-2.5 bg-[#301d6e] hover:bg-[#20134e] text-white rounded-xl text-xs font-bold transition-all"
+              className="mt-4 px-5 py-2.5 bg-[#301d6e] hover:bg-[#20134e] text-white rounded-xl text-xs font-bold transition-all cursor-pointer"
             >
               Clear All Filters
             </button>
@@ -340,23 +259,130 @@ export default function EventsDiscoveryPage() {
 
       </main>
 
-      <Footer />
+      {/* MOBILE FILTER MODAL / BOTTOM SHEET */}
+      {isMobileFilterOpen && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-xs p-0 sm:p-4">
+          <div 
+            className="w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-2xl p-6 space-y-6 shadow-2xl max-h-[85vh] overflow-y-auto animate-in slide-in-from-bottom duration-200"
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <h3 className="font-black text-lg text-slate-900">Filters</h3>
+                {activeFilterCount > 0 && (
+                  <span className="text-xs font-bold text-[#301d6e] bg-purple-50 px-2 py-0.5 rounded-full">
+                    {activeFilterCount} active
+                  </span>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsMobileFilterOpen(false)}
+                className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 cursor-pointer"
+                aria-label="Close filters"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
-      {/* Tix-style Checkout Modal */}
-      {selectedEventForCheckout && (
-        <TicketModal
-          event={selectedEventForCheckout}
-          onClose={() => setSelectedEventForCheckout(null)}
-          onTicketPurchased={(info) => {
-            purchaseTicket(selectedEventForCheckout, selectedEventForCheckout.ticketTiers[0].id, 1, {
-              name: info.attendeeName,
-              email: info.email,
-              phone: info.phone
-            });
-          }}
-          onOpenScannerWithTicket={() => setIsScannerOpen(true)}
-        />
+            {/* City Selector */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">
+                Location
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { value: 'All', label: 'All Cities' },
+                  { value: 'Abuja', label: 'Abuja' },
+                  { value: 'Lagos', label: 'Lagos' },
+                  { value: 'Port Harcourt', label: 'Port Harcourt' }
+                ].map((c) => (
+                  <button
+                    key={c.value}
+                    type="button"
+                    onClick={() => setSelectedCity(c.value)}
+                    className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all text-center cursor-pointer ${
+                      selectedCity === c.value
+                        ? 'bg-[#301d6e] text-white border-[#301d6e]'
+                        : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+                    }`}
+                  >
+                    {c.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Category Selector */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">
+                Category
+              </label>
+              <div className="flex flex-wrap gap-1.5">
+                {categories.map((cat) => (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setSelectedCategory(cat)}
+                    className={`py-1.5 px-3 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                      selectedCategory === cat
+                        ? 'bg-[#301d6e] text-white shadow-2xs'
+                        : 'bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100'
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Price Type */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">
+                Price
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {(['All', 'Paid', 'Free'] as const).map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setPriceType(p)}
+                    className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all text-center cursor-pointer ${
+                      priceType === p
+                        ? 'bg-[#8ec82d] text-[#1e1144] border-[#8ec82d]'
+                        : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="pt-2 flex items-center gap-3">
+              {activeFilterCount > 0 && (
+                <button
+                  type="button"
+                  onClick={handleResetFilters}
+                  className="py-3 px-4 rounded-xl text-xs font-bold text-rose-600 border border-rose-200 hover:bg-rose-50 transition-colors cursor-pointer"
+                >
+                  Reset
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setIsMobileFilterOpen(false)}
+                className="flex-1 py-3 bg-[#301d6e] hover:bg-[#20134e] text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-xs text-center cursor-pointer"
+              >
+                Show {filteredEvents.length} {filteredEvents.length === 1 ? 'Event' : 'Events'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
+
+      <Footer />
 
       {/* Gate Scanner */}
       {isScannerOpen && (

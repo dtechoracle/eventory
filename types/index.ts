@@ -184,3 +184,16 @@ export interface VendorBooking {
   depositStatus: 'paid' | 'pending';
   bookingStatus: 'confirmed' | 'in_progress' | 'completed';
 }
+
+export type UserRole = 'creator' | 'vendor' | 'attendee';
+
+export interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  phone?: string;
+  avatar?: string;
+  organizationName?: string;
+}
+

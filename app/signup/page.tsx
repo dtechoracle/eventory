@@ -4,14 +4,16 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, ShieldCheck, ArrowRight, CheckCircle2, User, Building2, Store } from 'lucide-react';
+import { useEventory } from '../../context/EventoryContext';
 
 export default function SignupPage() {
   const router = useRouter();
+  const { setCurrentUser, showToast } = useEventory();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<'attendee' | 'organiser' | 'vendor'>('attendee');
+  const [role, setRole] = useState<'attendee' | 'organiser' | 'vendor'>('organiser');
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -25,12 +27,23 @@ export default function SignupPage() {
     setIsSubmitting(true);
     setTimeout(() => {
       setIsSubmitting(false);
-      if (role === 'organiser') {
-        router.push('/organiser');
-      } else if (role === 'vendor') {
-        router.push('/vendor');
+      const appRole = role === 'organiser' ? 'creator' : role === 'vendor' ? 'vendor' : 'attendee';
+      setCurrentUser({
+        id: `usr-${Date.now().toString().slice(-4)}`,
+        name: fullName,
+        email,
+        phone,
+        role: appRole,
+        organizationName: `${fullName}'s Organization`
+      });
+      showToast(`Welcome to Eventory, ${fullName}!`);
+
+      if (appRole === 'creator') {
+        router.push('/dashboard/events');
+      } else if (appRole === 'vendor') {
+        router.push('/dashboard/vendor');
       } else {
-        router.push('/events');
+        router.push('/dashboard/tickets');
       }
     }, 700);
   };
