@@ -66,9 +66,15 @@ export default function VendorProfileClient({ id }: { id: string }) {
         </div>
       </div>
 
-      {/* Vendor Profile Header */}
-      <div className="bg-slate-900 text-white py-12 relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+      {/* Vendor Profile Header (Brand #301d6e, NO grey) */}
+      <div className="bg-[#301d6e] text-white py-12 sm:py-14 relative overflow-hidden">
+        <img
+          src={vendor.image}
+          alt={vendor.businessName}
+          className="absolute inset-0 w-full h-full object-cover opacity-15"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#1b0e42]/95 via-[#301d6e]/90 to-[#301d6e]/70"></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="space-y-3">
               <div className="flex flex-wrap items-center gap-2">

@@ -95,27 +95,35 @@ export default function MarketplacePage() {
     <div className="min-h-screen bg-white flex flex-col font-sans w-full overflow-x-hidden">
       <Navbar onOpenGateScanner={() => setIsScannerOpen(true)} />
 
-      {/* Clean White Page Header (No ugly grey box) */}
-      <div className="border-b border-slate-100 py-8 sm:py-12 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Marketplace Photographic Hero Banner (Brand #301d6e, NO grey) */}
+      <div className="relative w-full bg-[#301d6e] py-12 sm:py-16 overflow-hidden">
+        <img
+          src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=2000&q=80"
+          alt="Event Venues and Verified Vendors"
+          className="absolute inset-0 w-full h-full object-cover opacity-25"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#1b0e42]/95 via-[#301d6e]/90 to-[#301d6e]/60"></div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div className="max-w-2xl space-y-2">
-              <span className="text-[10px] font-black uppercase tracking-wider text-[#301d6e] bg-purple-50 px-2.5 py-1 rounded-md">
+            <div className="max-w-2xl space-y-3">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-[11px] font-black uppercase tracking-wider text-[#8ec82d] border border-white/20">
+                <Store className="w-3.5 h-3.5 text-[#8ec82d]" />
                 Verified Vendor Directory
               </span>
-              <h1 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight">
-                Hire trusted professionals for your next event
+              <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
+                Hire trusted event professionals in Nigeria
               </h1>
-              <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+              <p className="text-xs sm:text-sm text-purple-100 leading-relaxed max-w-xl">
                 Connect with verified caterers, decorators, photographers, venues and DJs in Abuja and Lagos with milestone escrow protection.
               </p>
             </div>
 
             <button
               onClick={() => setIsVendorSignupOpen(true)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-[#301d6e] hover:bg-[#20134e] text-white shadow-2xs transition-all shrink-0 cursor-pointer self-start md:self-auto"
+              className="flex items-center gap-2 px-5 py-3 rounded-xl text-xs font-black bg-[#8ec82d] hover:bg-[#7eb524] text-[#1e1144] shadow-md transition-all shrink-0 cursor-pointer self-start md:self-auto"
             >
-              <Plus className="w-3.5 h-3.5 text-[#8ec82d]" />
+              <Plus className="w-4 h-4 text-[#1e1144]" />
               <span>List Your Service</span>
             </button>
           </div>
@@ -125,8 +133,8 @@ export default function MarketplacePage() {
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
-        {/* Search & Filter Toolbar (Crisp white design) */}
-        <div className="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200/80 mb-8 space-y-4">
+        {/* Search & Filter Toolbar (Pure white background, clean border, NO grey background) */}
+        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-2xs mb-8 space-y-4">
           
           <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
             {/* Search */}

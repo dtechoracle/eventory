@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
-  Calendar, Store, Layers, QrCode, Plus, Menu, X, 
+  Calendar, Store, Layers, Plus, Menu, X, 
   Search, User, ChevronDown 
 } from 'lucide-react';
 
