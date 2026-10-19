@@ -236,34 +236,29 @@ export default function LoginPage() {
 
       </div>
 
-      {/* RIGHT COLUMN: Stylish Illustration Graphic */}
-      <div className="hidden lg:flex lg:w-1/2 min-h-screen bg-[#fdf5f2] relative items-center justify-center p-12 overflow-hidden border-l border-slate-100">
-        <div className="absolute top-12 right-12 w-64 h-64 bg-[#f8e6de] rounded-full blur-3xl opacity-70"></div>
-        <div className="absolute bottom-12 left-12 w-80 h-80 bg-[#ebe4f8] rounded-full blur-3xl opacity-60"></div>
-
-        <div className="relative z-10 max-w-md text-center space-y-6">
-          <div className="w-72 h-80 sm:w-88 sm:h-96 mx-auto rounded-3xl overflow-hidden shadow-xl border border-white/60 relative">
-            <img
-              src="https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1000&q=80"
-              alt="Event Attendees Experience"
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#301d6e]/85 via-transparent to-transparent flex flex-col justify-end p-6 text-white text-left">
-              <span className="text-[10px] font-black uppercase tracking-wider text-[#8ec82d]">
-                Unified Events Ecosystem
-              </span>
-              <h3 className="text-lg font-black leading-snug">
-                One platform. Every event.
-              </h3>
-              <p className="text-xs text-purple-200 mt-0.5">
-                Connecting organizers, attendees, and trusted service providers across Nigeria.
-              </p>
+      {/* RIGHT COLUMN: Full bleed cover image covering the entire section */}
+      <div className="hidden lg:block lg:w-1/2 relative min-h-screen bg-[#301d6e]">
+        <img
+          src="https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1600&q=85"
+          alt="Event Attendees Experience"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#1b0e42]/95 via-[#301d6e]/40 to-black/20 flex flex-col justify-end p-12 xl:p-16 text-white">
+          <div className="max-w-lg space-y-4">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-[11px] font-bold uppercase tracking-wider text-[#8ec82d] border border-white/20">
+              <Sparkles className="w-3.5 h-3.5 text-[#8ec82d]" />
+              Unified Events Ecosystem
+            </span>
+            <h2 className="text-3xl xl:text-4xl font-black text-white leading-tight">
+              One platform. Every event.
+            </h2>
+            <p className="text-sm xl:text-base text-purple-100 font-medium leading-relaxed">
+              Connecting organizers, attendees, and trusted Nigerian service providers in one seamless ecosystem.
+            </p>
+            <div className="flex items-center gap-2 pt-2 text-xs font-semibold text-purple-200">
+              <ShieldCheck className="w-4 h-4 text-[#8ec82d]" />
+              <span>Bank-grade encryption & milestone escrow protection</span>
             </div>
-          </div>
-
-          <div className="flex items-center justify-center gap-2 text-xs font-bold text-slate-600">
-            <ShieldCheck className="w-4 h-4 text-[#8ec82d]" />
-            <span>Bank-grade encryption & milestone escrow protection</span>
           </div>
         </div>
       </div>
