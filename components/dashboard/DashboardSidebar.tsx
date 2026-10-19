@@ -7,7 +7,7 @@ import { useEventory } from '../../context/EventoryContext';
 import { 
   Calendar, Ticket, Tag, Megaphone, QrCode, User, 
   HelpCircle, LogOut, ChevronRight, Sparkles, Building2, 
-  Store, CheckCircle2, ShieldCheck, X
+  Store, CheckCircle2, ShieldCheck, X, Layers, Send, Briefcase
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -24,18 +24,20 @@ export default function DashboardSidebar({ mobileOpen = false, onCloseMobile }: 
   const isAttendee = currentUser.role === 'attendee';
 
   const creatorNavLinks = [
-    { href: '/dashboard/events', label: 'Events', icon: Calendar },
+    { href: '/dashboard/events', label: 'Events Studio', icon: Calendar },
+    { href: '/dashboard/workspace', label: 'Planning Workspace', icon: Layers },
     { href: '/dashboard/discounts', label: 'Discounts', icon: Tag },
     { href: '/dashboard/marketing', label: 'Marketing', icon: Megaphone },
     { href: '/dashboard/box-office', label: 'Box office', icon: QrCode },
-    { href: '/dashboard/account', label: 'Account', icon: User },
+    { href: '/dashboard/account', label: 'Account & Payouts', icon: User },
   ];
 
   const vendorNavLinks = [
     { href: '/dashboard/vendor', label: 'Vendor Overview', icon: Store },
-    { href: '/vendor', label: 'Enquiries & Bookings', icon: Calendar },
-    { href: '/marketplace', label: 'Marketplace Profile', icon: Building2 },
-    { href: '/dashboard/account', label: 'Account', icon: User },
+    { href: '/dashboard/vendor/enquiries', label: 'Client Inquiries', icon: Send },
+    { href: '/dashboard/vendor/bookings', label: 'Confirmed Bookings', icon: Calendar },
+    { href: '/dashboard/vendor/packages', label: 'Packages & Rates', icon: Briefcase },
+    { href: '/dashboard/account', label: 'Payout & Profile', icon: User },
   ];
 
   const attendeeNavLinks = [
@@ -52,9 +54,12 @@ export default function DashboardSidebar({ mobileOpen = false, onCloseMobile }: 
 
   const isActive = (href: string) => {
     if (href === '/dashboard/events') {
-      return pathname.startsWith('/dashboard/events');
+      return pathname === '/dashboard/events' || pathname.startsWith('/dashboard/events/');
     }
-    return pathname === href;
+    if (href === '/dashboard/vendor') {
+      return pathname === '/dashboard/vendor';
+    }
+    return pathname.startsWith(href);
   };
 
   return (

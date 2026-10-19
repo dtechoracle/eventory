@@ -20,8 +20,6 @@ export default function Navbar({ onOpenGateScanner, onOpenCreateEvent }: NavbarP
   const navLinks = [
     { href: '/events', label: 'Discover events' },
     { href: '/marketplace', label: 'Marketplace' },
-    { href: '/dashboard', label: 'Dashboard' },
-    { href: '/organiser', label: 'Organisers' },
     { href: '/vendor', label: 'Vendors' }
   ];
 
