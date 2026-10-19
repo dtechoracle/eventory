@@ -3,14 +3,13 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Eye, EyeOff, ShieldCheck, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Eye, EyeOff, ShieldCheck, ArrowRight } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [isVerifying, setIsVerifying] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -29,13 +28,13 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col lg:flex-row font-sans">
+    <div className="min-h-screen w-full bg-white flex flex-col lg:flex-row font-sans">
       
-      {/* LEFT COLUMN: Clean Auth Form (media_1792159615213.png) */}
-      <div className="w-full lg:w-1/2 flex flex-col justify-between p-6 sm:p-12 lg:p-16 max-w-xl mx-auto lg:mx-0">
+      {/* LEFT COLUMN: Clean Auth Form (Full 50% on Desktop, perfectly centered) */}
+      <div className="w-full lg:w-1/2 min-h-screen flex flex-col justify-between p-6 sm:p-12 lg:p-16 xl:p-20">
         
         {/* Brand Logo */}
-        <div>
+        <div className="w-full max-w-md mx-auto">
           <Link href="/" className="inline-flex items-center gap-1.5 group">
             <span className="text-2xl font-black tracking-tight text-[#301d6e]">
               eventory
@@ -45,7 +44,7 @@ export default function LoginPage() {
         </div>
 
         {/* Form Body */}
-        <div className="my-auto py-8 space-y-6">
+        <div className="w-full max-w-md mx-auto my-auto py-8 space-y-6">
           <div className="space-y-1.5">
             <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
               Welcome back
@@ -97,15 +96,6 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Cloudflare Turnstile Mockup Box (media_1792159615213.png) */}
-            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between text-xs text-slate-500">
-              <div className="flex items-center gap-2">
-                <span className="w-3.5 h-3.5 border-2 border-[#301d6e] border-t-transparent rounded-full animate-spin"></span>
-                <span className="text-[11px] font-medium text-slate-600">Verifying secure connection...</span>
-              </div>
-              <span className="text-[10px] font-mono font-bold text-slate-400 uppercase">Cloudflare</span>
-            </div>
-
             {/* Sign in Button */}
             <button
               type="submit"
@@ -136,14 +126,14 @@ export default function LoginPage() {
         </div>
 
         {/* Footer info */}
-        <div className="text-[11px] text-slate-400 pt-4">
+        <div className="w-full max-w-md mx-auto text-[11px] text-slate-400 pt-4">
           © 2027 Eventory Nexus Limited. Plan • Book • Experience.
         </div>
 
       </div>
 
       {/* RIGHT COLUMN: Stylish Illustration Graphic (media_1792159615213.png) */}
-      <div className="hidden lg:flex lg:w-1/2 bg-[#fdf5f2] relative items-center justify-center p-12 overflow-hidden border-l border-slate-100">
+      <div className="hidden lg:flex lg:w-1/2 min-h-screen bg-[#fdf5f2] relative items-center justify-center p-12 overflow-hidden border-l border-slate-100">
         
         {/* Background Graphic Accents */}
         <div className="absolute top-12 right-12 w-64 h-64 bg-[#f8e6de] rounded-full blur-3xl opacity-70"></div>

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEventory } from '../../../../context/EventoryContext';
+import DashboardLayout from '../../../../components/dashboard/DashboardLayout';
 import { EventItem } from '../../../../types';
 import { 
   ArrowLeft, Calendar, MapPin, Sparkles, Upload, 
@@ -180,11 +181,12 @@ export default function CreateEventPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white font-sans text-slate-900 pb-20">
-      
-      {/* Top Bar with Back and Stepper (Matching media_1792369713434.png) */}
-      <header className="sticky top-0 bg-white/95 backdrop-blur-md border-b border-slate-100 z-30 px-4 sm:px-8 py-4">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
+    <DashboardLayout>
+      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden pb-12">
+        
+        {/* Top Bar with Back and Stepper (Matching media_1792369713434.png) */}
+        <div className="bg-white border-b border-slate-100 z-10 px-4 sm:px-8 py-4">
+          <div className="max-w-4xl mx-auto flex items-center justify-between">
           
           {/* Back button */}
           <Link
@@ -242,7 +244,7 @@ export default function CreateEventPage() {
 
           <div className="w-12"></div>
         </div>
-      </header>
+      </div>
 
       {/* Main Form Container */}
       <main className="max-w-4xl mx-auto px-4 sm:px-8 pt-8 sm:pt-12">
@@ -949,6 +951,7 @@ export default function CreateEventPage() {
 
       </main>
 
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }

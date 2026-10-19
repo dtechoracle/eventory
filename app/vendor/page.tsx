@@ -4,377 +4,322 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
-import GateScannerModal from '../../components/GateScannerModal';
+import QuoteModal from '../../components/QuoteModal';
 import { useEventory } from '../../context/EventoryContext';
 import { formatNaira } from '../../lib/utils';
-import { VendorEnquiry, VendorBooking } from '../../types';
+import { VendorItem } from '../../types';
 import { 
-  Store, Briefcase, Calendar, Receipt, Star, Clock, CheckCircle2, 
-  Send, XCircle, Plus, ChevronRight, Settings, ShieldCheck, DollarSign, Users, Award 
+  Store, Search, MapPin, Users, Star, ShieldCheck, 
+  Check, ArrowRight, RotateCcw, Filter, ChevronDown, 
+  Briefcase, CheckCircle2, Sparkles, Building2
 } from 'lucide-react';
 
-export default function VendorDashboardPage() {
-  const { vendors, vendorEnquiries, vendorBookings, respondToEnquiry, checkInGuest } = useEventory();
-  const [activeTab, setActiveTab] = useState<'overview' | 'enquiries' | 'bookings' | 'packages' | 'quotes' | 'reviews'>('overview');
-  const [isScannerOpen, setIsScannerOpen] = useState(false);
+export default function VendorDirectoryPage() {
+  const { vendors, requestVendorQuote } = useEventory();
+  const [selectedVendorForQuote, setSelectedVendorForQuote] = useState<VendorItem | null>(null);
 
-  // Active vendor profile (demonstrating ABC Events & Royal Catering)
-  const currentVendor = vendors[0];
+  // Filters state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCity, setSelectedCity] = useState('All');
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [sortBy, setSortBy] = useState<'rating' | 'price_asc' | 'price_desc' | 'popular'>('rating');
 
-  // Send quote response modal
-  const [selectedEnquiry, setSelectedEnquiry] = useState<VendorEnquiry | null>(null);
-  const [quoteAmount, setQuoteAmount] = useState<number>(0);
+  const categories = [
+    'All',
+    'Venues',
+    'Catering',
+    'Decoration',
+    'Photography',
+    'Sound & DJ',
+    'Security',
+    'Transportation',
+    'Ushers & Support'
+  ];
 
-  const pendingEnquiries = vendorEnquiries.filter((e) => e.status === 'pending');
-  const totalRevenue = vendorBookings.reduce((sum, b) => sum + (b.depositStatus === 'paid' ? b.amount : 0), 0);
-
-  const handleSendQuoteResponse = () => {
-    if (selectedEnquiry && quoteAmount > 0) {
-      respondToEnquiry(selectedEnquiry.id, quoteAmount);
-      setSelectedEnquiry(null);
+  // Filter vendors
+  const filteredVendors = vendors.filter((v) => {
+    // Search
+    const q = searchQuery.toLowerCase().trim();
+    if (q) {
+      const matchName = v.businessName.toLowerCase().includes(q);
+      const matchCat = v.category.toLowerCase().includes(q);
+      const matchDesc = v.description.toLowerCase().includes(q);
+      const matchLoc = v.locationAddress.toLowerCase().includes(q);
+      if (!matchName && !matchCat && !matchDesc && !matchLoc) return false;
     }
+
+    // City
+    if (selectedCity !== 'All' && v.city !== selectedCity) return false;
+
+    // Category
+    if (selectedCategory !== 'All' && v.category !== selectedCategory) return false;
+
+    return true;
+  });
+
+  // Sort vendors
+  const sortedVendors = [...filteredVendors].sort((a, b) => {
+    if (sortBy === 'rating') return b.rating - a.rating;
+    if (sortBy === 'price_asc') return a.priceFrom - b.priceFrom;
+    if (sortBy === 'price_desc') return b.priceFrom - a.priceFrom;
+    if (sortBy === 'popular') return b.bookedCount - a.bookedCount;
+    return 0;
+  });
+
+  const activeFilterCount = 
+    (searchQuery ? 1 : 0) + 
+    (selectedCity !== 'All' ? 1 : 0) + 
+    (selectedCategory !== 'All' ? 1 : 0);
+
+  const handleResetFilters = () => {
+    setSearchQuery('');
+    setSelectedCity('All');
+    setSelectedCategory('All');
+    setSortBy('rating');
   };
 
   return (
-    <div className="min-h-screen bg-slate-100/70 flex flex-col font-sans">
-      <Navbar onOpenGateScanner={() => setIsScannerOpen(true)} />
+    <div className="min-h-screen bg-white flex flex-col font-sans w-full overflow-x-hidden">
+      <Navbar />
 
-      {/* Main Container */}
-      <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm overflow-hidden flex flex-col md:flex-row min-h-[720px]">
-          
-          {/* Vendor Left Sidebar */}
-          <aside className="w-full md:w-64 bg-slate-50/80 border-r border-slate-200/80 p-4 flex flex-col justify-between shrink-0">
-            <div className="space-y-6">
-              
-              {/* Vendor Profile Header */}
-              <div className="p-3 bg-white rounded-2xl border border-slate-200 shadow-2xs">
-                <div className="flex items-center gap-1.5 mb-1 text-[10px] uppercase font-black text-[#8ec82d] bg-[#301d6e] px-2 py-0.5 rounded w-fit">
-                  Verified Vendor
-                </div>
-                <h3 className="font-bold text-sm text-slate-900 line-clamp-1">{currentVendor.businessName}</h3>
-                <p className="text-xs text-slate-500 mt-0.5">{currentVendor.category} • {currentVendor.city}</p>
-                <div className="flex items-center gap-1 mt-2 text-xs font-bold text-slate-700">
-                  <Star className="w-3.5 h-3.5 fill-[#8ec82d] text-[#8ec82d]" />
-                  <span>{currentVendor.rating}</span>
-                  <span className="text-slate-400 font-normal">({currentVendor.reviewsCount} reviews)</span>
-                </div>
-              </div>
-
-              {/* Navigation Items */}
-              <nav className="space-y-1">
-                {[
-                  { id: 'overview', label: 'Business Overview', icon: Briefcase },
-                  { id: 'enquiries', label: 'Client Enquiries', icon: Send, badge: pendingEnquiries.length > 0 ? `${pendingEnquiries.length} New` : undefined },
-                  { id: 'bookings', label: 'Confirmed Bookings', icon: Calendar, badge: String(vendorBookings.length) },
-                  { id: 'packages', label: 'Packages & Rates', icon: Store },
-                  { id: 'quotes', label: 'Quotes & Invoices', icon: Receipt },
-                  { id: 'reviews', label: 'Client Reviews', icon: Star, badge: String(currentVendor.reviewsCount) }
-                ].map((item) => {
-                  const Icon = item.icon;
-                  const isActive = activeTab === item.id;
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => setActiveTab(item.id as any)}
-                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                        isActive
-                          ? 'bg-[#301d6e] text-white shadow-2xs'
-                          : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <Icon className={`w-4 h-4 ${isActive ? 'text-[#8ec82d]' : 'text-slate-400'}`} />
-                        <span>{item.label}</span>
-                      </div>
-                      {item.badge && (
-                        <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${
-                          isActive ? 'bg-[#8ec82d] text-[#20134e]' : 'bg-slate-200 text-slate-600'
-                        }`}>
-                          {item.badge}
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </nav>
-
+      {/* Clean Page Header */}
+      <div className="bg-white border-b border-slate-100 py-10 sm:py-14">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div className="max-w-2xl space-y-2">
+              <h1 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight">
+                Verified Event Vendors & Services
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+                Discover and hire pre-vetted venues, caterers, decorators, photographers, and audio engineers in Abuja, Lagos, and Port Harcourt. Secured with milestone escrow payments.
+              </p>
             </div>
 
-            {/* Public Listing Link */}
-            <div className="pt-4 border-t border-slate-200/80">
+            <div className="flex items-center gap-3">
               <Link
-                href={`/marketplace/${currentVendor.id}`}
-                className="w-full flex items-center justify-center gap-2 py-2 px-3 bg-purple-50 hover:bg-purple-100 border border-purple-200 text-[#301d6e] font-bold text-xs rounded-xl transition-colors"
+                href="/dashboard/vendor"
+                className="px-5 py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 rounded-xl text-xs font-bold transition-all shadow-2xs"
               >
-                <span>View Public Profile</span>
-                <ChevronRight className="w-3.5 h-3.5" />
+                Go to Vendor Dashboard
               </Link>
-            </div>
-          </aside>
-
-          {/* Right Main Content */}
-          <main className="flex-1 p-6 lg:p-8 overflow-y-auto">
-            
-            {/* Contextual Header */}
-            <div className="flex items-center justify-between border-b border-slate-100 pb-5 mb-6">
-              <div>
-                <span className="text-xs text-slate-400 uppercase font-bold tracking-wider">Vendor Operations Portal</span>
-                <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mt-0.5">
-                  {activeTab === 'overview' && 'Business Performance & Booking Pipeline'}
-                  {activeTab === 'enquiries' && 'Incoming Quotation Requests'}
-                  {activeTab === 'bookings' && 'Confirmed Event Calendar'}
-                  {activeTab === 'packages' && 'Package Offerings & Base Pricing'}
-                  {activeTab === 'quotes' && 'Sent Quotations & Escrow Settlement'}
-                  {activeTab === 'reviews' && 'Customer Ratings & Testimonials'}
-                </h2>
-              </div>
-            </div>
-
-            {/* TAB: OVERVIEW */}
-            {activeTab === 'overview' && (
-              <div className="space-y-6">
-                
-                {/* Metrics Cards */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200">
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Pending Enquiries</span>
-                    <span className="text-2xl font-black text-[#301d6e]">{pendingEnquiries.length}</span>
-                    <span className="text-[10px] text-slate-500 block mt-0.5">awaiting response</span>
-                  </div>
-
-                  <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200">
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Confirmed Bookings</span>
-                    <span className="text-2xl font-black text-[#557917]">{vendorBookings.length}</span>
-                    <span className="text-[10px] text-slate-500 block mt-0.5">on schedule</span>
-                  </div>
-
-                  <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200">
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Escrow Revenue</span>
-                    <span className="text-2xl font-black text-emerald-600">{formatNaira(totalRevenue)}</span>
-                    <span className="text-[10px] text-emerald-600 block mt-0.5">contracted funds</span>
-                  </div>
-
-                  <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200">
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Response Speed</span>
-                    <span className="text-2xl font-black text-slate-900">99%</span>
-                    <span className="text-[10px] text-slate-500 block mt-0.5">&lt; 1 hour</span>
-                  </div>
-                </div>
-
-                {/* Incoming Enquiries Queue */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-bold text-sm text-slate-900">Recent Enquiries from Organisers</h3>
-                    <button onClick={() => setActiveTab('enquiries')} className="text-xs font-bold text-[#301d6e] hover:underline">
-                      View all →
-                    </button>
-                  </div>
-
-                  <div className="space-y-2">
-                    {vendorEnquiries.map((enq) => (
-                      <div key={enq.id} className="p-4 bg-white rounded-2xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-xs sm:text-sm text-slate-900">{enq.eventTitle}</span>
-                            <span className="text-[10px] text-slate-400">• {enq.receivedTime}</span>
-                          </div>
-                          <p className="text-xs text-slate-600 mt-0.5">{enq.notes}</p>
-                          <div className="text-[11px] text-slate-500 mt-1">
-                            Date: <strong>{enq.date}</strong> | Guests: <strong>{enq.guestCount}</strong> | Client: <strong>{enq.organizerName}</strong>
-                          </div>
-                        </div>
-
-                        <div className="shrink-0">
-                          {enq.status === 'quoted' ? (
-                            <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-lg">
-                              Quote Dispatched
-                            </span>
-                          ) : (
-                            <button
-                              onClick={() => { setSelectedEnquiry(enq); setQuoteAmount(enq.budgetEstimated); }}
-                              className="px-3.5 py-1.5 bg-[#8ec82d] hover:bg-[#75a723] text-[#20134e] text-xs font-bold rounded-xl"
-                            >
-                              Send Quote
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-              </div>
-            )}
-
-            {/* TAB: ENQUIRIES */}
-            {activeTab === 'enquiries' && (
-              <div className="space-y-4">
-                <div className="space-y-3">
-                  {vendorEnquiries.map((enq) => (
-                    <div key={enq.id} className="p-5 bg-white rounded-2xl border border-slate-200 shadow-2xs space-y-3">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <span className="text-[10px] font-bold uppercase text-slate-400">Request #{enq.id}</span>
-                          <h4 className="font-bold text-sm text-slate-900 mt-0.5">{enq.eventTitle}</h4>
-                        </div>
-                        <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${
-                          enq.status === 'quoted' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                        }`}>
-                          {enq.status === 'quoted' ? 'Quotation Sent' : 'Pending Response'}
-                        </span>
-                      </div>
-
-                      <p className="text-xs text-slate-700 bg-slate-50 p-3 rounded-xl border border-slate-100">
-                        {enq.notes}
-                      </p>
-
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs pt-1">
-                        <div><span className="text-slate-400 block text-[10px]">Event Date</span><strong>{enq.date}</strong></div>
-                        <div><span className="text-slate-400 block text-[10px]">Guest Count</span><strong>{enq.guestCount} Guests</strong></div>
-                        <div><span className="text-slate-400 block text-[10px]">Contact</span><strong>{enq.organizerName}</strong></div>
-                        <div><span className="text-slate-400 block text-[10px]">Phone</span><strong>{enq.organizerPhone}</strong></div>
-                      </div>
-
-                      {enq.status === 'pending' && (
-                        <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
-                          <button
-                            onClick={() => { setSelectedEnquiry(enq); setQuoteAmount(enq.budgetEstimated); }}
-                            className="px-4 py-2 bg-[#8ec82d] text-[#20134e] text-xs font-bold rounded-xl"
-                          >
-                            Prepare Formal Quotation
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* TAB: BOOKINGS */}
-            {activeTab === 'bookings' && (
-              <div className="space-y-4">
-                <div className="bg-white rounded-2xl border border-slate-200 overflow-x-auto">
-                  <table className="w-full text-left text-xs">
-                    <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase font-bold">
-                      <tr>
-                        <th className="py-3 px-4">Client Name</th>
-                        <th className="py-3 px-4">Event Details</th>
-                        <th className="py-3 px-4">Date & Venue</th>
-                        <th className="py-3 px-4">Contract Amount</th>
-                        <th className="py-3 px-4">Deposit Status</th>
-                        <th className="py-3 px-4">Booking Status</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {vendorBookings.map((bkg) => (
-                        <tr key={bkg.id} className="hover:bg-slate-50">
-                          <td className="py-3 px-4 font-bold text-slate-900">{bkg.clientName}</td>
-                          <td className="py-3 px-4">{bkg.eventTitle}</td>
-                          <td className="py-3 px-4 font-medium">{bkg.date} • {bkg.venue}</td>
-                          <td className="py-3 px-4 font-bold text-slate-900">{formatNaira(bkg.amount)}</td>
-                          <td className="py-3 px-4">
-                            <span className="px-2 py-0.5 rounded font-bold bg-emerald-50 text-emerald-700">
-                              {bkg.depositStatus === 'paid' ? 'Paid to Escrow' : 'Pending'}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4">
-                            <span className="px-2 py-0.5 rounded font-bold bg-[#301d6e]/10 text-[#301d6e]">
-                              {bkg.bookingStatus}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-
-            {/* TAB: PACKAGES */}
-            {activeTab === 'packages' && (
-              <div className="space-y-4">
-                <div className="space-y-3">
-                  {currentVendor.packages?.map((pkg) => (
-                    <div key={pkg.id} className="p-4 bg-white rounded-2xl border border-slate-200 flex justify-between items-center">
-                      <div>
-                        <h4 className="font-bold text-sm text-slate-900">{pkg.name}</h4>
-                        <p className="text-xs text-slate-500">{pkg.description}</p>
-                      </div>
-                      <span className="text-base font-black text-[#301d6e]">{formatNaira(pkg.price)}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* TAB: QUOTES */}
-            {activeTab === 'quotes' && (
-              <div className="space-y-4">
-                <p className="text-xs text-slate-600">All quotations are legally binding once approved by the event host.</p>
-                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-xs">
-                  <strong>Escrow Security Protocol:</strong> Eventory guarantees payment disbursement upon approved event milestone completion.
-                </div>
-              </div>
-            )}
-
-            {/* TAB: REVIEWS */}
-            {activeTab === 'reviews' && (
-              <div className="space-y-3">
-                {currentVendor.reviews?.map((r) => (
-                  <div key={r.id} className="p-4 bg-white rounded-2xl border border-slate-200 space-y-1 text-xs">
-                    <div className="flex justify-between items-center font-bold text-slate-900">
-                      <span>{r.author} ({r.eventType})</span>
-                      <span className="text-amber-500">★ {r.rating}.0</span>
-                    </div>
-                    <p className="text-slate-600 italic">"{r.comment}"</p>
-                  </div>
-                ))}
-              </div>
-            )}
-
-          </main>
-
-        </div>
-      </div>
-
-      <Footer />
-
-      {/* Quote Send Modal */}
-      {selectedEnquiry && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl p-6 max-w-sm w-full space-y-4">
-            <h4 className="font-bold text-slate-900">Send Formal Quotation</h4>
-            <p className="text-xs text-slate-600">Responding to <strong>{selectedEnquiry.organizerName}</strong> for {selectedEnquiry.eventTitle}.</p>
-            <div>
-              <label className="text-xs font-bold text-slate-700">Quoted Amount (₦ NGN)</label>
-              <input
-                type="number"
-                value={quoteAmount}
-                onChange={(e) => setQuoteAmount(Number(e.target.value))}
-                className="w-full p-2 bg-slate-50 border rounded-xl text-sm font-bold"
-              />
-            </div>
-            <div className="flex justify-end gap-2">
-              <button onClick={() => setSelectedEnquiry(null)} className="px-3 py-2 text-xs">Cancel</button>
-              <button onClick={handleSendQuoteResponse} className="px-4 py-2 bg-[#301d6e] text-white text-xs font-bold rounded-xl">
-                Send to Organiser
-              </button>
             </div>
           </div>
         </div>
-      )}
+      </div>
 
-      {/* Gate Scanner */}
-      {isScannerOpen && (
-        <GateScannerModal
-          isOpen={isScannerOpen}
-          onClose={() => setIsScannerOpen(false)}
-          guests={[]}
-          onCheckInGuest={checkInGuest}
+      {/* Main Content Area */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        {/* Search & Filter Bar */}
+        <div className="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200/80 mb-8 space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
+            {/* Search Input */}
+            <div className="sm:col-span-8 relative">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search vendors by service, name, or keyword..."
+                className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#301d6e]"
+              />
+            </div>
+
+            {/* City Selector */}
+            <div className="sm:col-span-4 relative">
+              <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#301d6e]" />
+              <select
+                value={selectedCity}
+                onChange={(e) => setSelectedCity(e.target.value)}
+                className="w-full pl-10 pr-8 py-2.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#301d6e] appearance-none cursor-pointer"
+              >
+                <option value="All">All Cities (Nigeria)</option>
+                <option value="Abuja">Abuja, Nigeria</option>
+                <option value="Lagos">Lagos, Nigeria</option>
+                <option value="Port Harcourt">Port Harcourt, Nigeria</option>
+              </select>
+              <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
+          </div>
+
+          {/* Category Horizontal Pills */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-slate-200/60">
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`whitespace-nowrap px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                    selectedCategory === cat
+                      ? 'bg-[#301d6e] text-white shadow-2xs'
+                      : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+
+            {activeFilterCount > 0 && (
+              <button
+                onClick={handleResetFilters}
+                className="flex items-center gap-1 text-xs text-rose-600 hover:text-rose-700 font-bold self-start sm:self-auto cursor-pointer"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Reset ({activeFilterCount})</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Results Banner */}
+        <div className="flex items-center justify-between mb-6 text-xs text-slate-500 font-medium">
+          <span>Showing <strong>{sortedVendors.length}</strong> verified {sortedVendors.length === 1 ? 'vendor' : 'vendors'}</span>
+          <span>Abuja • Lagos • Port Harcourt</span>
+        </div>
+
+        {/* Vendor Cards Grid (3 Columns Desktop, 1 Column Mobile) */}
+        {sortedVendors.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {sortedVendors.map((vendor) => (
+              <div
+                key={vendor.id}
+                className="group bg-white rounded-2xl border border-slate-200/80 hover:border-slate-300 hover:shadow-sm transition-all duration-200 overflow-hidden flex flex-col justify-between"
+              >
+                <div>
+                  {/* Vendor Banner Image */}
+                  <Link href={`/marketplace/${vendor.id}`} className="relative block h-48 bg-slate-100 overflow-hidden">
+                    <img
+                      src={vendor.image}
+                      alt={vendor.businessName}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute top-3 left-3 flex items-center gap-1.5">
+                      <span className="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-white/95 backdrop-blur-xs text-[#301d6e]">
+                        {vendor.category}
+                      </span>
+                    </div>
+
+                    {vendor.cacRegistered && (
+                      <div className="absolute top-3 right-3">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-[#8ec82d] text-[#1e1144] flex items-center gap-1 shadow-xs">
+                          <ShieldCheck className="w-3 h-3 stroke-[3]" /> CAC Verified
+                        </span>
+                      </div>
+                    )}
+                  </Link>
+
+                  {/* Vendor Info Body */}
+                  <div className="p-5 space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <Link href={`/marketplace/${vendor.id}`}>
+                        <h3 className="font-bold text-base text-slate-900 group-hover:text-[#301d6e] transition-colors leading-snug line-clamp-1">
+                          {vendor.businessName}
+                        </h3>
+                      </Link>
+
+                      <div className="flex items-center gap-1 text-xs font-bold text-slate-800 shrink-0">
+                        <Star className="w-3.5 h-3.5 fill-[#8ec82d] text-[#8ec82d]" />
+                        <span>{vendor.rating}</span>
+                        <span className="text-[10px] text-slate-400 font-normal">({vendor.reviewsCount})</span>
+                      </div>
+                    </div>
+
+                    <p className="text-xs text-slate-500 flex items-center gap-1 line-clamp-1">
+                      <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      <span>{vendor.locationAddress}, {vendor.city}</span>
+                    </p>
+
+                    <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+                      {vendor.description}
+                    </p>
+
+                    {/* Services Tags */}
+                    <div className="flex flex-wrap gap-1 pt-1">
+                      {vendor.servicesIncluded.slice(0, 3).map((srv, idx) => (
+                        <span key={idx} className="text-[10px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
+                          {srv}
+                        </span>
+                      ))}
+                      {vendor.servicesIncluded.length > 3 && (
+                        <span className="text-[10px] font-semibold text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded-md">
+                          +{vendor.servicesIncluded.length - 3} more
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer Pricing & CTAs */}
+                <div className="p-5 pt-0 border-t border-slate-100 mt-2 flex items-center justify-between gap-3">
+                  <div className="pt-3">
+                    <span className="text-[10px] font-bold text-slate-400 block uppercase">Rates Starting</span>
+                    <strong className="text-sm font-black text-slate-900">
+                      {formatNaira(vendor.priceFrom)}
+                    </strong>
+                  </div>
+
+                  <div className="pt-3 flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedVendorForQuote(vendor)}
+                      className="px-3.5 py-2 bg-[#301d6e] hover:bg-[#20134e] text-white font-bold text-xs rounded-xl transition-all cursor-pointer"
+                    >
+                      Request Quote
+                    </button>
+                    <Link
+                      href={`/marketplace/${vendor.id}`}
+                      className="p-2 border border-slate-200 hover:border-slate-300 rounded-xl text-slate-600 hover:text-slate-900 transition-colors"
+                      title="View vendor profile"
+                    >
+                      <ArrowRight className="w-4 h-4" />
+                    </Link>
+                  </div>
+                </div>
+
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-16 bg-white rounded-3xl border border-slate-200 p-8 space-y-3">
+            <Store className="w-10 h-10 text-slate-400 mx-auto" />
+            <h3 className="font-bold text-base text-slate-900">No vendors found</h3>
+            <p className="text-xs text-slate-500 max-w-sm mx-auto">
+              We couldn't find any service providers matching your query. Try clearing your filters.
+            </p>
+            <button
+              onClick={handleResetFilters}
+              className="px-5 py-2.5 bg-[#301d6e] text-white rounded-xl text-xs font-bold"
+            >
+              Reset Filters
+            </button>
+          </div>
+        )}
+
+      </main>
+
+      <Footer />
+
+      {/* Quote Request Modal */}
+      {selectedVendorForQuote && (
+        <QuoteModal
+          vendor={selectedVendorForQuote}
+          onClose={() => setSelectedVendorForQuote(null)}
+          onSubmitQuote={(q) => {
+            requestVendorQuote(selectedVendorForQuote, {
+              eventType: q.category,
+              date: 'Upcoming Event',
+              guestCount: 300,
+              requirements: q.details,
+              contactName: 'Organizer',
+              phone: '+234 800 000 0000',
+              email: 'organizer@eventory.nexus'
+            });
+            setSelectedVendorForQuote(null);
+          }}
         />
       )}
+
     </div>
   );
 }

@@ -49,13 +49,13 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col lg:flex-row font-sans">
+    <div className="min-h-screen w-full bg-white flex flex-col lg:flex-row font-sans">
       
-      {/* LEFT COLUMN: Clean Register Form (Matching media_1792159615213.png) */}
-      <div className="w-full lg:w-1/2 flex flex-col justify-between p-6 sm:p-12 lg:p-16 max-w-xl mx-auto lg:mx-0">
+      {/* LEFT COLUMN: Clean Register Form (Full 50% on Desktop, perfectly centered) */}
+      <div className="w-full lg:w-1/2 min-h-screen flex flex-col justify-between p-6 sm:p-12 lg:p-16 xl:p-20">
         
         {/* Brand Logo */}
-        <div>
+        <div className="w-full max-w-md mx-auto">
           <Link href="/" className="inline-flex items-center gap-1.5 group">
             <span className="text-2xl font-black tracking-tight text-[#301d6e]">
               eventory
@@ -65,7 +65,7 @@ export default function SignupPage() {
         </div>
 
         {/* Form Body */}
-        <div className="my-auto py-8 space-y-6">
+        <div className="w-full max-w-md mx-auto my-auto py-8 space-y-6">
           <div className="space-y-1.5">
             <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
               Create an account
@@ -186,15 +186,6 @@ export default function SignupPage() {
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-            </div>
-
-            {/* Cloudflare Verification Box */}
-            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between text-xs text-slate-500">
-              <div className="flex items-center gap-2">
-                <span className="w-3.5 h-3.5 border-2 border-[#301d6e] border-t-transparent rounded-full animate-spin"></span>
-                <span className="text-[11px] font-medium text-slate-600">Verifying secure connection...</span>
-              </div>
-              <span className="text-[10px] font-mono font-bold text-slate-400 uppercase">Cloudflare</span>
             </div>
 
             {/* Submit Button */}
