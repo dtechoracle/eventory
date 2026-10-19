@@ -19,8 +19,7 @@ export default function Navbar({ onOpenGateScanner, onOpenCreateEvent }: NavbarP
 
   const navLinks = [
     { href: '/events', label: 'Discover events' },
-    { href: '/marketplace', label: 'Marketplace' },
-    { href: '/vendor', label: 'Vendors' }
+    { href: '/marketplace', label: 'Marketplace' }
   ];
 
   const isActive = (href: string) => {
@@ -129,13 +128,6 @@ export default function Navbar({ onOpenGateScanner, onOpenCreateEvent }: NavbarP
               className="w-full text-center py-2.5 rounded-full text-xs font-bold text-white bg-[#301d6e]"
             >
               Create an Event
-            </Link>
-            <Link
-              href="/vendor"
-              onClick={() => setMobileMenuOpen(false)}
-              className="w-full text-center py-2.5 rounded-full text-xs font-bold text-[#301d6e] border border-slate-200"
-            >
-              Vendor Business Portal
             </Link>
           </div>
         </div>

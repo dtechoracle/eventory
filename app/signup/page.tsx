@@ -82,18 +82,7 @@ export default function SignupPage() {
               <label className="block text-xs font-bold text-slate-700">
                 I want to:
               </label>
-              <div className="grid grid-cols-3 gap-2 text-xs">
-                <button
-                  type="button"
-                  onClick={() => setRole('attendee')}
-                  className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer ${
-                    role === 'attendee'
-                      ? 'border-[#301d6e] bg-[#301d6e]/5 font-bold text-[#301d6e]'
-                      : 'border-slate-200 text-slate-600 hover:border-slate-300'
-                  }`}
-                >
-                  Attend
-                </button>
+              <div className="grid grid-cols-2 gap-2 text-xs">
                 <button
                   type="button"
                   onClick={() => setRole('organiser')}
@@ -103,7 +92,7 @@ export default function SignupPage() {
                       : 'border-slate-200 text-slate-600 hover:border-slate-300'
                   }`}
                 >
-                  Organise
+                  Organise Events
                 </button>
                 <button
                   type="button"
@@ -114,7 +103,7 @@ export default function SignupPage() {
                       : 'border-slate-200 text-slate-600 hover:border-slate-300'
                   }`}
                 >
-                  Provide Service
+                  Provide Service (Vendor)
                 </button>
               </div>
             </div>
@@ -226,10 +215,6 @@ export default function SignupPage() {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#1b0e42]/95 via-[#301d6e]/40 to-black/20 flex flex-col justify-end p-12 xl:p-16 text-white">
           <div className="max-w-lg space-y-4">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-[11px] font-bold uppercase tracking-wider text-[#8ec82d] border border-white/20">
-              <Sparkles className="w-3.5 h-3.5 text-[#8ec82d]" />
-              Eventory Community
-            </span>
             <h2 className="text-3xl xl:text-4xl font-black text-white leading-tight">
               Start your journey
             </h2>

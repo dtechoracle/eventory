@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useEventory } from '../../context/EventoryContext';
 import { 
   Eye, EyeOff, ShieldCheck, ArrowRight, Calendar, 
-  Store, Layers, Ticket, CheckCircle2, Sparkles, ChevronRight 
+  Store, CheckCircle2, ChevronRight 
 } from 'lucide-react';
 
 export default function LoginPage() {
@@ -116,50 +116,6 @@ export default function LoginPage() {
                   </span>
                 </div>
               </button>
-
-              {/* 3. Planning Workspace */}
-              <button
-                type="button"
-                onClick={() => handleQuickAccess('creator', '/dashboard/workspace', 'Planning Workspace')}
-                className="p-3.5 rounded-xl border border-slate-200 hover:border-[#301d6e] bg-slate-50/70 hover:bg-purple-50/40 text-left transition-all group cursor-pointer flex flex-col justify-between"
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <div className="w-7 h-7 rounded-lg bg-[#301d6e] text-white flex items-center justify-center">
-                    <Layers className="w-4 h-4 text-[#8ec82d]" />
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-[#301d6e] group-hover:translate-x-0.5 transition-all" />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-slate-900 group-hover:text-[#301d6e] transition-colors">
-                    Event Workspace
-                  </h4>
-                  <span className="text-[10px] text-slate-500 block">
-                    /dashboard/workspace
-                  </span>
-                </div>
-              </button>
-
-              {/* 4. Attendee Passes */}
-              <button
-                type="button"
-                onClick={() => handleQuickAccess('attendee', '/dashboard/tickets', 'My Tickets & Passes')}
-                className="p-3.5 rounded-xl border border-slate-200 hover:border-[#301d6e] bg-slate-50/70 hover:bg-purple-50/40 text-left transition-all group cursor-pointer flex flex-col justify-between"
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <div className="w-7 h-7 rounded-lg bg-[#301d6e] text-white flex items-center justify-center">
-                    <Ticket className="w-4 h-4 text-[#8ec82d]" />
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-[#301d6e] group-hover:translate-x-0.5 transition-all" />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-slate-900 group-hover:text-[#301d6e] transition-colors">
-                    Attendee / Tickets
-                  </h4>
-                  <span className="text-[10px] text-slate-500 block">
-                    /dashboard/tickets
-                  </span>
-                </div>
-              </button>
             </div>
           </div>
 
@@ -245,10 +201,6 @@ export default function LoginPage() {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#1b0e42]/95 via-[#301d6e]/40 to-black/20 flex flex-col justify-end p-12 xl:p-16 text-white">
           <div className="max-w-lg space-y-4">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-[11px] font-bold uppercase tracking-wider text-[#8ec82d] border border-white/20">
-              <Sparkles className="w-3.5 h-3.5 text-[#8ec82d]" />
-              Unified Events Ecosystem
-            </span>
             <h2 className="text-3xl xl:text-4xl font-black text-white leading-tight">
               One platform. Every event.
             </h2>

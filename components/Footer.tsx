@@ -64,8 +64,7 @@ export default function Footer() {
                 <li><Link href="/" className="hover:text-slate-900">Homepage</Link></li>
                 <li><Link href="/events" className="hover:text-slate-900">Discover Events</Link></li>
                 <li><Link href="/marketplace" className="hover:text-slate-900">Marketplace</Link></li>
-                <li><Link href="/organiser" className="hover:text-slate-900">How It Works</Link></li>
-                <li><Link href="/vendor" className="hover:text-slate-900">For Vendors</Link></li>
+                <li><Link href="/login" className="hover:text-slate-900">Sign In</Link></li>
               </ul>
             </div>
 

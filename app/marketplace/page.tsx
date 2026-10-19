@@ -107,10 +107,6 @@ export default function MarketplacePage() {
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div className="max-w-2xl space-y-3">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-[11px] font-black uppercase tracking-wider text-[#8ec82d] border border-white/20">
-                <Store className="w-3.5 h-3.5 text-[#8ec82d]" />
-                Verified Vendor Directory
-              </span>
               <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
                 Hire trusted event professionals in Nigeria
               </h1>

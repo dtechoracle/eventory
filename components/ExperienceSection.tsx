@@ -65,13 +65,6 @@ export default function ExperienceSection({
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#301d6e]/5 text-[#301d6e] text-xs font-bold uppercase tracking-wider mb-2">
-              <span className="w-2 h-2 rounded-full bg-[#8ec82d]"></span>
-              <span>PILLAR C • EXPERIENCE</span>
-              <span className="text-slate-300">•</span>
-              <span className="text-slate-500 font-normal">Tix Discovery & Ticketing</span>
-            </div>
-            
             <h2 className="text-3xl sm:text-4xl font-black text-[#301d6e] tracking-tight">
               Discover Events & Get Verified Digital Passes
             </h2>

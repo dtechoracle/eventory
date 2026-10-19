@@ -14,7 +14,7 @@ export default function DashboardIndexPage() {
     } else if (currentUser.role === 'vendor') {
       router.replace('/dashboard/vendor');
     } else {
-      router.replace('/dashboard/tickets');
+      router.replace('/dashboard/events');
     }
   }, [currentUser.role, router]);
 

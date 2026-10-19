@@ -320,9 +320,6 @@ export default function HomePage() {
               
               {/* Left Copy */}
               <div className="lg:col-span-6 space-y-4">
-                <span className="text-[11px] font-black uppercase tracking-wider text-[#301d6e] bg-purple-50 px-3 py-1 rounded-full">
-                  Organiser Workspace
-                </span>
                 <h2 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight leading-tight">
                   For first-time planners and expert organisers
                 </h2>

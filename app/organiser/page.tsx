@@ -7,7 +7,7 @@ export default function OrganiserRedirectPage() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace('/dashboard/workspace');
+    router.replace('/dashboard/events');
   }, [router]);
 
   return (
