@@ -1,0 +1,248 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserRole {
+  creator
+  vendor
+  attendee
+}
+
+enum TicketPaymentStatus {
+  paid
+  pending
+  complimentary
+  refunded
+}
+
+enum EnquiryStatus {
+  pending
+  quoted
+  declined
+}
+
+enum BookingDepositStatus {
+  paid
+  pending
+}
+
+enum BookingStatus {
+  confirmed
+  in_progress
+  completed
+  cancelled
+}
+
+model User {
+  id               String    @id @default(cuid())
+  email            String    @unique
+  name             String
+  passwordHash     String?
+  phone            String?
+  role             UserRole  @default(creator)
+  organizationName String?
+  avatar           String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  events           Event[]
+  vendorProfile    Vendor?
+  sessions         Session[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model Event {
+  id                String       @id @default(cuid())
+  title             String
+  slug              String       @unique
+  organizerName     String
+  organizerVerified Boolean      @default(true)
+  category          String
+  date              String
+  time              String
+  venue             String
+  city              String
+  state             String       @default("Nigeria")
+  image             String
+  description       String       @db.Text
+  startingPrice     Int          @default(0) // In Naira (₦)
+  currency          String       @default("NGN")
+  ticketsSold       Int          @default(0)
+  capacity          Int          @default(500)
+  featured          Boolean      @default(false)
+  editorialTag      String?
+  refundPolicy      String?      @db.Text
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  userId            String?
+  user              User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  ticketTiers       TicketTier[]
+  tickets           Ticket[]
+
+  @@map("events")
+}
+
+model TicketTier {
+  id          String   @id @default(cuid())
+  eventId     String
+  name        String
+  price       Int      @default(0) // In Naira (₦)
+  description String?
+  remaining   Int      @default(100)
+  capacity    Int      @default(100)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  tickets     Ticket[]
+
+  @@map("ticket_tiers")
+}
+
+model Ticket {
+  id            String              @id @default(cuid())
+  ticketCode    String              @unique
+  eventId       String
+  tierId        String
+  attendeeName  String
+  attendeeEmail String
+  attendeePhone String?
+  quantity      Int                 @default(1)
+  totalPaid     Int                 @default(0) // In Naira (₦)
+  paymentStatus TicketPaymentStatus @default(paid)
+  checkedIn     Boolean             @default(false)
+  checkInTime   DateTime?
+  tableNumber   String?
+  qrData        String              @db.Text
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  event         Event               @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  tier          TicketTier          @relation(fields: [tierId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+  @@index([ticketCode])
+  @@map("tickets")
+}
+
+model Vendor {
+  id               String          @id @default(cuid())
+  userId           String?         @unique
+  businessName     String
+  category         String
+  city             String
+  locationAddress  String
+  guestCapacity    String?
+  priceFrom        Int             @default(0) // In Naira (₦)
+  rating           Float           @default(5.0)
+  reviewsCount     Int             @default(0)
+  responseRate     String          @default("under 1 hour")
+  verified         Boolean         @default(true)
+  cacRegistered    Boolean         @default(true)
+  cacNumber        String?
+  image            String
+  portfolio        String[]        @default([])
+  description      String          @db.Text
+  servicesIncluded String[]        @default([])
+  bookedCount      Int             @default(0)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  user             User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  packages         VendorPackage[]
+  reviews          VendorReview[]
+  enquiries        VendorEnquiry[]
+  bookings         VendorBooking[]
+
+  @@map("vendors")
+}
+
+model VendorPackage {
+  id          String   @id @default(cuid())
+  vendorId    String
+  name        String
+  price       Int      @default(0) // In Naira (₦)
+  description String?
+  features    String[] @default([])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  vendor      Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@map("vendor_packages")
+}
+
+model VendorReview {
+  id        String   @id @default(cuid())
+  vendorId  String
+  author    String
+  eventType String
+  date      String
+  rating    Float    @default(5.0)
+  comment   String   @db.Text
+  createdAt DateTime @default(now())
+
+  vendor    Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@map("vendor_reviews")
+}
+
+model VendorEnquiry {
+  id              String        @id @default(cuid())
+  vendorId        String?
+  eventTitle      String
+  organizerName   String
+  organizerPhone  String
+  organizerEmail  String
+  date            String
+  guestCount      Int           @default(100)
+  budgetEstimated Int           @default(0) // In Naira (₦)
+  status          EnquiryStatus @default(pending)
+  notes           String?       @db.Text
+  quotedAmount    Int?          // In Naira (₦)
+  receivedTime    String
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  vendor          Vendor?       @relation(fields: [vendorId], references: [id], onDelete: SetNull)
+
+  @@map("vendor_enquiries")
+}
+
+model VendorBooking {
+  id            String               @id @default(cuid())
+  vendorId      String?
+  clientName    String
+  eventTitle    String
+  date          String
+  venue         String
+  amount        Int                  @default(0) // In Naira (₦)
+  depositStatus BookingDepositStatus @default(paid)
+  bookingStatus BookingStatus        @default(confirmed)
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+
+  vendor        Vendor?              @relation(fields: [vendorId], references: [id], onDelete: SetNull)
+
+  @@map("vendor_bookings")
+}

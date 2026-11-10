@@ -11,7 +11,7 @@ import {
 
 export default function LoginPage() {
   const router = useRouter();
-  const { setCurrentUserRole, showToast } = useEventory();
+  const { setCurrentUser, setCurrentUserRole, showToast } = useEventory();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -23,7 +23,7 @@ export default function LoginPage() {
     router.push(targetPath);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
       alert('Please enter your email and password.');
@@ -31,12 +31,41 @@ export default function LoginPage() {
     }
 
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
-      // Route based on role or to events dashboard by default
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.user) {
+        setCurrentUser(data.user);
+        showToast(`Welcome back, ${data.user.name}!`);
+        if (data.user.role === 'vendor') {
+          router.push('/dashboard/vendor');
+        } else {
+          router.push('/dashboard/events');
+        }
+        return;
+      }
+
+      // If database not yet seeded or credentials mismatch, fallback gracefully
+      if (res.status === 401) {
+        alert(data.error || 'Invalid email or password.');
+      } else {
+        // Fallback for offline demo mode
+        setCurrentUserRole('creator');
+        showToast('Signed in to Event Creator Studio.');
+        router.push('/dashboard/events');
+      }
+    } catch {
+      // Offline fallback
       setCurrentUserRole('creator');
       router.push('/dashboard/events');
-    }, 600);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

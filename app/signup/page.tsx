@@ -17,7 +17,7 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fullName || !email || !password) {
       alert('Please fill in your name, email and password.');
@@ -25,27 +25,64 @@ export default function SignupPage() {
     }
 
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
-      const appRole = role === 'organiser' ? 'creator' : role === 'vendor' ? 'vendor' : 'attendee';
+    const appRole = role === 'organiser' ? 'creator' : 'vendor';
+
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: fullName,
+          email,
+          password,
+          phone,
+          role: appRole,
+          organizationName: `${fullName}'s Organization`,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.user) {
+        setCurrentUser(data.user);
+        showToast(`Welcome to Eventory, ${fullName}!`);
+        if (appRole === 'creator') {
+          router.push('/dashboard/events');
+        } else {
+          router.push('/dashboard/vendor');
+        }
+        return;
+      }
+
+      if (res.status === 409) {
+        alert(data.error || 'An account with this email already exists.');
+        return;
+      }
+
+      // Offline demo fallback
       setCurrentUser({
         id: `usr-${Date.now().toString().slice(-4)}`,
         name: fullName,
         email,
         phone,
         role: appRole,
-        organizationName: `${fullName}'s Organization`
+        organizationName: `${fullName}'s Organization`,
       });
       showToast(`Welcome to Eventory, ${fullName}!`);
-
-      if (appRole === 'creator') {
-        router.push('/dashboard/events');
-      } else if (appRole === 'vendor') {
-        router.push('/dashboard/vendor');
-      } else {
-        router.push('/dashboard/tickets');
-      }
-    }, 700);
+      router.push(appRole === 'creator' ? '/dashboard/events' : '/dashboard/vendor');
+    } catch {
+      setCurrentUser({
+        id: `usr-${Date.now().toString().slice(-4)}`,
+        name: fullName,
+        email,
+        phone,
+        role: appRole,
+        organizationName: `${fullName}'s Organization`,
+      });
+      showToast(`Welcome to Eventory, ${fullName}!`);
+      router.push(appRole === 'creator' ? '/dashboard/events' : '/dashboard/vendor');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
