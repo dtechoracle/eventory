@@ -1,6 +1,8 @@
 import { INITIAL_VENDORS } from '../../../data/mockData';
 import VendorProfileClient from '../../../components/VendorProfileClient';
 
+export const instant = false;
+
 export function generateStaticParams() {
   return INITIAL_VENDORS.map((vnd) => ({ id: vnd.id }));
 }

@@ -1,6 +1,8 @@
 import { INITIAL_EVENTS } from '../../../data/mockData';
 import EventDetailClient from '../../../components/EventDetailClient';
 
+export const instant = false;
+
 export function generateStaticParams() {
   return INITIAL_EVENTS.map((evt) => ({ id: evt.id }));
 }
