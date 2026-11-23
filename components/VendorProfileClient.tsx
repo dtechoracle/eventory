@@ -166,12 +166,21 @@ export default function VendorProfileClient({ id }: { id: string }) {
               </div>
             </div>
 
-            <div className="bg-white p-5 rounded-2xl border border-slate-200 text-slate-900 text-left md:text-right shrink-0 shadow-sm">
-              <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Indicative Starting Rate</span>
-              <span className="text-2xl font-black text-[#301d6e]">
-                From {formatNaira(vendor.priceFrom)}
-              </span>
-              <span className="text-[11px] text-emerald-600 font-semibold block mt-0.5">✓ Escrow Milestone Protection</span>
+            <div className="bg-white p-5 rounded-2xl border border-slate-200 text-slate-900 text-left md:text-right shrink-0 shadow-sm flex flex-col justify-between">
+              <div>
+                <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Indicative Starting Rate</span>
+                <span className="text-2xl font-black text-[#301d6e]">
+                  From {formatNaira(vendor.priceFrom)}
+                </span>
+                <span className="text-[11px] text-emerald-600 font-semibold block mt-0.5">✓ Escrow Milestone Protection</span>
+              </div>
+              <Link
+                href={`/marketplace/${vendor.slug || vendor.id}/request`}
+                className="mt-3 inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-[#301d6e] hover:bg-[#20134e] text-white text-xs font-bold transition-all shadow-xs"
+              >
+                <Send className="w-3.5 h-3.5 text-[#8ec82d]" />
+                <span>Request Service</span>
+              </Link>
             </div>
           </div>
         </div>

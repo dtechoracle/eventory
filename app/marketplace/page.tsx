@@ -338,12 +338,12 @@ export default function MarketplacePage() {
                     >
                       View
                     </Link>
-                    <button
-                      onClick={() => setSelectedVendorForQuote(vendor)}
+                    <Link
+                      href={`/marketplace/${vendor.slug || vendor.id}/request`}
                       className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#301d6e] hover:bg-[#20134e] text-white transition-colors cursor-pointer flex items-center gap-1"
                     >
                       <span>Request</span>
-                    </button>
+                    </Link>
                   </div>
                 </div>
 

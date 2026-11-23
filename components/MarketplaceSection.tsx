@@ -226,13 +226,13 @@ export default function MarketplaceSection({
                   </span>
                 </div>
 
-                <button
-                  onClick={() => onRequestQuote(vendor)}
+                <Link
+                  href={`/marketplace/${vendor.slug || vendor.id}/request`}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-[#301d6e] hover:bg-[#20134e] text-white shadow-xs transition-all hover:scale-105 border-b-2 border-[#8ec82d]"
                 >
                   <Send className="w-3 h-3 text-[#8ec82d]" />
                   <span>Request</span>
-                </button>
+                </Link>
               </div>
             </div>
           ))}
