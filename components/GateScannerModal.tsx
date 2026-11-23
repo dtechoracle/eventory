@@ -11,7 +11,7 @@ interface GateScannerModalProps {
   isOpen: boolean;
   onClose: () => void;
   guests: WorkspaceGuest[];
-  onCheckInGuest: (code: string) => { success: boolean; message: string; guest?: WorkspaceGuest; alreadyCheckedIn?: boolean };
+  onCheckInGuest: (code: string) => Promise<{ success: boolean; message: string; guest?: WorkspaceGuest; alreadyCheckedIn?: boolean }> | { success: boolean; message: string; guest?: WorkspaceGuest; alreadyCheckedIn?: boolean };
   initialCode?: string;
 }
 
@@ -82,11 +82,11 @@ export default function GateScannerModal({
     setFacingMode((prev) => (prev === 'environment' ? 'user' : 'environment'));
   };
 
-  const handleScanSubmit = (codeToVerify?: string) => {
+  const handleScanSubmit = async (codeToVerify?: string) => {
     const code = (codeToVerify || inputCode).trim().toUpperCase();
     if (!code) return;
 
-    const res = onCheckInGuest(code);
+    const res = await onCheckInGuest(code);
     if (res.success) {
       setScanResult({
         status: 'success',

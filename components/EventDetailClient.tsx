@@ -16,11 +16,55 @@ import {
 } from 'lucide-react';
 
 export default function EventDetailClient({ id }: { id: string }) {
-  const { events, purchaseTicket, checkInGuest } = useEventory();
+  const { events, purchaseTicket, checkInGuest, toast } = useEventory();
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
-  const event = events.find((e) => e.id === id);
+  const eventFromContext = events.find((e) => e.id === id || e.slug === id);
+  const [event, setEvent] = useState<typeof eventFromContext>(eventFromContext);
+  const [isFetchingEvent, setIsFetchingEvent] = useState(!eventFromContext);
+
+  React.useEffect(() => {
+    if (eventFromContext) {
+      setEvent(eventFromContext);
+      setIsFetchingEvent(false);
+      return;
+    }
+
+    let isMounted = true;
+    async function loadEvent() {
+      try {
+        const res = await fetch(`/api/events/${id}`);
+        if (res.ok) {
+          const json = await res.json();
+          if (json.data && isMounted) {
+            setEvent(json.data);
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to load event directly:', err);
+      } finally {
+        if (isMounted) setIsFetchingEvent(false);
+      }
+    }
+    loadEvent();
+
+    return () => { isMounted = false; };
+  }, [id, eventFromContext]);
+
+  if (isFetchingEvent && !event) {
+    return (
+      <div className="min-h-screen bg-white flex flex-col font-sans">
+        <Navbar onOpenGateScanner={() => setIsScannerOpen(true)} />
+        <div className="flex-1 max-w-7xl mx-auto px-4 py-20 flex flex-col items-center justify-center">
+          <div className="w-10 h-10 border-4 border-[#301d6e] border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-xs text-slate-500 mt-4 font-bold">Loading live event details from Neon DB...</p>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
   if (!event) {
     notFound();
   }
@@ -28,7 +72,7 @@ export default function EventDetailClient({ id }: { id: string }) {
   const handleShare = () => {
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
       navigator.clipboard.writeText(window.location.href);
-      alert('Event link copied to clipboard!');
+      toast.success('Link Copied', 'Event link copied to clipboard!');
     }
   };
 
@@ -78,6 +122,10 @@ export default function EventDetailClient({ id }: { id: string }) {
               <Ticket className="w-4 h-4 text-[#8ec82d]" />
               <span>Get a Ticket</span>
             </Link>
+            <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-500 font-medium">
+              <Check className="w-3.5 h-3.5 text-[#8ec82d]" />
+              <span>Instant guest checkout • No account needed</span>
+            </div>
 
             {/* Host Information Quick Row */}
             <div className="flex items-center justify-between p-3.5 rounded-xl border border-slate-100 bg-white text-xs">

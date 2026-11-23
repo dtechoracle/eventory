@@ -36,10 +36,10 @@ export default function VendorDashboardPage() {
           </div>
 
           <Link
-            href="/vendor"
+            href="/dashboard/vendor/packages"
             className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#301d6e] hover:bg-[#20134e] text-white font-bold text-xs rounded-xl transition-all self-start sm:self-auto"
           >
-            <span>Full Vendor Portal</span>
+            <span>Service Packages</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
@@ -75,7 +75,7 @@ export default function VendorDashboardPage() {
             <h2 className="text-sm font-black text-slate-900 uppercase tracking-wider">
               Recent Client Enquiries
             </h2>
-            <Link href="/vendor" className="text-xs font-bold text-[#301d6e] hover:underline">
+            <Link href="/dashboard/vendor/enquiries" className="text-xs font-bold text-[#301d6e] hover:underline">
               View all
             </Link>
           </div>
@@ -104,7 +104,7 @@ export default function VendorDashboardPage() {
                     Est: {formatNaira(enq.budgetEstimated)}
                   </span>
                   <Link
-                    href="/vendor"
+                    href="/dashboard/vendor/enquiries"
                     className="px-3.5 py-1.5 bg-[#301d6e] text-white font-bold text-xs rounded-lg hover:bg-[#20134e] transition-all"
                   >
                     Respond

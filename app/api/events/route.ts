@@ -37,7 +37,12 @@ export async function GET(req: NextRequest) {
       orderBy: { createdAt: 'desc' },
     });
 
-    return NextResponse.json({ success: true, count: events.length, data: events });
+    const mappedEvents = events.map((e) => ({
+      ...e,
+      organizer: e.organizerName,
+    }));
+
+    return NextResponse.json({ success: true, count: mappedEvents.length, data: mappedEvents });
   } catch (error: any) {
     console.error('Fetch events error:', error);
     return NextResponse.json(

@@ -1,11 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEventory } from '../../context/EventoryContext';
 import { 
   Calendar, Tag, Megaphone, QrCode, User, 
-  HelpCircle, LogOut, Store, X, Send, Briefcase
+  HelpCircle, LogOut, Store, X, Send, Briefcase 
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -15,8 +16,25 @@ interface SidebarProps {
 
 export default function DashboardSidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { showToast, setCurrentUser } = useEventory();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const isVendorRoute = pathname.startsWith('/dashboard/vendor');
+
+  const handleSignOut = async () => {
+    try {
+      setIsLoggingOut(true);
+      await fetch('/api/auth/logout', { method: 'POST' });
+      showToast('Signed out of your Eventory session.');
+      router.push('/login');
+      router.refresh();
+    } catch {
+      router.push('/login');
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
 
   const creatorNavLinks = [
     { href: '/dashboard/events', label: 'Events Studio', icon: Calendar },
@@ -118,13 +136,15 @@ export default function DashboardSidebar({ mobileOpen = false, onCloseMobile }: 
 
         {/* Bottom Sidebar Items */}
         <div className="p-3 border-t border-slate-100 space-y-1">
-          <Link
-            href="/login"
-            className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-rose-600 hover:bg-rose-50 transition-colors"
+          <button
+            type="button"
+            onClick={handleSignOut}
+            disabled={isLoggingOut}
+            className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer text-left disabled:opacity-50"
           >
-            <LogOut className="w-4 h-4 text-rose-500" />
-            <span>Sign out</span>
-          </Link>
+            <LogOut className="w-4 h-4 text-rose-500 shrink-0" />
+            <span>{isLoggingOut ? 'Signing out...' : 'Sign out'}</span>
+          </button>
         </div>
 
       </aside>

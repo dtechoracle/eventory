@@ -1,8 +1,9 @@
-import { PrismaClient, UserRole } from '@prisma/client';
+import 'dotenv/config';
+import { UserRole } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { INITIAL_EVENTS, INITIAL_VENDORS } from '../data/mockData';
+import { prisma } from '../lib/prisma';
 
-const prisma = new PrismaClient();
 
 async function main() {
   console.log('🌱 Starting Eventory Neon DB database seeding...');

@@ -17,26 +17,78 @@ import {
 
 export default function EventTicketsCheckoutPage({ id }: { id: string }) {
   const router = useRouter();
-  const { events, purchaseTicket, checkInGuest } = useEventory();
+  const { events, purchaseTicket, checkInGuest, toast } = useEventory();
   const [isScannerOpen, setIsScannerOpen] = useState(false);
 
-  const event = events.find((e) => e.id === id);
-  if (!event) {
-    notFound();
-  }
+  const eventFromContext = events.find((e) => e.id === id || e.slug === id);
+  const [event, setEvent] = useState<typeof eventFromContext>(eventFromContext);
+  const [isFetchingEvent, setIsFetchingEvent] = useState(!eventFromContext);
+
+  React.useEffect(() => {
+    if (eventFromContext) {
+      setEvent(eventFromContext);
+      setIsFetchingEvent(false);
+      return;
+    }
+
+    let isMounted = true;
+    async function loadEvent() {
+      try {
+        const res = await fetch(`/api/events/${id}`);
+        if (res.ok) {
+          const json = await res.json();
+          if (json.data && isMounted) {
+            setEvent(json.data);
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to load event:', err);
+      } finally {
+        if (isMounted) setIsFetchingEvent(false);
+      }
+    }
+    loadEvent();
+
+    return () => { isMounted = false; };
+  }, [id, eventFromContext]);
 
   // Stepper: 1. tickets -> 2. attendee -> 3. payment -> 4. confirmed
   const [currentStep, setCurrentStep] = useState<'tickets' | 'attendee' | 'payment' | 'confirmed'>('tickets');
 
   // Quantities per tier (defaults 1 for first tier)
-  const [tierQuantities, setTierQuantities] = useState<Record<string, number>>(() => {
-    const initial: Record<string, number> = {};
-    const tiers = event?.ticketTiers || [];
-    tiers.forEach((tier, idx) => {
-      initial[tier.id] = idx === 0 ? 1 : 0;
-    });
-    return initial;
-  });
+  const [tierQuantities, setTierQuantities] = useState<Record<string, number>>({});
+
+  React.useEffect(() => {
+    if (event?.ticketTiers && event.ticketTiers.length > 0) {
+      setTierQuantities((prev) => {
+        if (Object.keys(prev).length > 0) return prev;
+        const initial: Record<string, number> = {};
+        event.ticketTiers.forEach((tier, idx) => {
+          initial[tier.id] = idx === 0 ? 1 : 0;
+        });
+        return initial;
+      });
+    }
+  }, [event]);
+
+  if (isFetchingEvent && !event) {
+    return (
+      <div className="min-h-screen bg-white flex flex-col font-sans">
+        <header className="border-b border-slate-100 bg-white h-16 flex items-center px-4 max-w-7xl mx-auto w-full">
+          <span className="font-black text-slate-900">Checkout</span>
+        </header>
+        <div className="flex-1 max-w-7xl mx-auto px-4 py-20 flex flex-col items-center justify-center">
+          <div className="w-10 h-10 border-4 border-[#301d6e] border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-xs text-slate-500 mt-4 font-bold">Loading live tickets from Neon DB...</p>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!event) {
+    notFound();
+  }
 
   // Purchaser Details
   const [purchaserName, setPurchaserName] = useState('');
@@ -93,7 +145,7 @@ export default function EventTicketsCheckoutPage({ id }: { id: string }) {
 
   const handleProceedToAttendee = () => {
     if (totalTicketsCount === 0) {
-      alert('Please select at least 1 ticket to continue.');
+      toast.warning('No Tickets Selected', 'Please select at least 1 ticket to continue.');
       return;
     }
     setCurrentStep('attendee');
@@ -103,11 +155,11 @@ export default function EventTicketsCheckoutPage({ id }: { id: string }) {
   const handleProceedToPayment = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!purchaserName.trim() || !purchaserEmail.trim()) {
-      alert('Please provide your name and email address.');
+      toast.warning('Contact Info Required', 'Please provide your full name and email address.');
       return;
     }
     if (isBuyingForSomeoneElse && (!recipientName.trim() || !recipientEmail.trim())) {
-      alert("Please provide the recipient attendee's name and email.");
+      toast.warning('Attendee Info Required', "Please provide the recipient attendee's full name and email.");
       return;
     }
     if (isFree) {
@@ -118,32 +170,35 @@ export default function EventTicketsCheckoutPage({ id }: { id: string }) {
     }
   };
 
-  const handleCompletePurchase = () => {
+  const handleCompletePurchase = async () => {
     setIsProcessing(true);
-    setTimeout(() => {
-      const code = generateTicketCode('EVT');
+    try {
       const primaryTierName = selectedItemsList[0]?.name || event.ticketTiers[0].name;
+      const primaryTier = event.ticketTiers.find((t) => t.name === primaryTierName) || event.ticketTiers[0];
       const finalAttendeeName = isBuyingForSomeoneElse ? recipientName : purchaserName;
       const finalAttendeeEmail = isBuyingForSomeoneElse ? recipientEmail : purchaserEmail;
       const finalAttendeePhone = isBuyingForSomeoneElse ? recipientPhone : purchaserPhone;
 
-      purchaseTicket(event, event.ticketTiers[0].id, totalTicketsCount, {
+      const confirmed = await purchaseTicket(event, primaryTier.id, totalTicketsCount, {
         name: finalAttendeeName,
         email: finalAttendeeEmail,
         phone: finalAttendeePhone
       });
 
       setConfirmedData({
-        code,
+        code: confirmed.ticketCode,
         tierName: primaryTierName,
         attendeeName: finalAttendeeName,
         total: totalAmount
       });
 
-      setIsProcessing(false);
       setCurrentStep('confirmed');
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, 900);
+    } catch (err) {
+      console.error('Purchase error:', err);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -282,6 +337,13 @@ export default function EventTicketsCheckoutPage({ id }: { id: string }) {
               {/* STEP 1: CHOOSE TICKETS */}
               {currentStep === 'tickets' && (
                 <div className="space-y-4">
+                  <div className="p-3 bg-emerald-50/80 border border-emerald-200/60 rounded-xl flex items-center gap-2.5 text-xs text-emerald-900">
+                    <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span className="font-medium">
+                      <strong>Instant Guest Checkout</strong> — No account required. Digital tickets & entry passes are emailed directly to you.
+                    </span>
+                  </div>
+
                   <div className="flex items-center justify-between">
                     <h2 className="text-lg font-black text-slate-900">Choose Tickets</h2>
                     <span className="text-xs text-slate-500">Select quantity</span>
@@ -412,7 +474,7 @@ export default function EventTicketsCheckoutPage({ id }: { id: string }) {
                   <div className="space-y-1">
                     <h2 className="text-lg font-black text-slate-900">Your Contact Details</h2>
                     <p className="text-xs text-slate-500">
-                      Payment receipts and order notifications will be sent to your email.
+                      No account or password needed. Payment receipt and ticket pass will be sent directly to your email.
                     </p>
                   </div>
 

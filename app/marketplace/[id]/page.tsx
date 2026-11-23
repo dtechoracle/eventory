@@ -1,10 +1,15 @@
 import { INITIAL_VENDORS } from '../../../data/mockData';
 import VendorProfileClient from '../../../components/VendorProfileClient';
 
-export const instant = false;
-
 export function generateStaticParams() {
-  return INITIAL_VENDORS.map((vnd) => ({ id: vnd.id }));
+  const params: { id: string }[] = [];
+  INITIAL_VENDORS.forEach((vnd) => {
+    params.push({ id: vnd.id });
+    if (vnd.slug) {
+      params.push({ id: vnd.slug });
+    }
+  });
+  return params;
 }
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {

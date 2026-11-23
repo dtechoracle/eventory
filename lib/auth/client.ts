@@ -1,0 +1,5 @@
+import { createAuthClient } from '@neon/auth/next';
+
+export const authClient = createAuthClient();
+
+export default authClient;

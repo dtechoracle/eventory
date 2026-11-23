@@ -51,40 +51,36 @@ export async function POST(req: NextRequest) {
       platform: 'Eventory Nexus Nigeria',
     });
 
-    const ticket = await prisma.$transaction(async (tx) => {
-      // Create ticket
-      const created = await tx.ticket.create({
-        data: {
-          ticketCode,
-          eventId: event.id,
-          tierId: tier.id,
-          attendeeName: attendee.name,
-          attendeeEmail: attendee.email.toLowerCase().trim(),
-          attendeePhone: attendee.phone || null,
-          quantity: qty,
-          totalPaid,
-          qrData,
-          paymentStatus: 'paid',
-        },
-      });
+    // Create ticket
+    const ticket = await prisma.ticket.create({
+      data: {
+        ticketCode,
+        eventId: event.id,
+        tierId: tier.id,
+        attendeeName: attendee.name,
+        attendeeEmail: attendee.email.toLowerCase().trim(),
+        attendeePhone: attendee.phone || null,
+        quantity: qty,
+        totalPaid,
+        qrData,
+        paymentStatus: 'paid',
+      },
+    });
 
-      // Decrement tier remaining
-      await tx.ticketTier.update({
-        where: { id: tier.id },
-        data: {
-          remaining: { decrement: qty },
-        },
-      });
+    // Decrement tier remaining
+    await prisma.ticketTier.update({
+      where: { id: tier.id },
+      data: {
+        remaining: { decrement: qty },
+      },
+    });
 
-      // Increment event ticketsSold
-      await tx.event.update({
-        where: { id: event.id },
-        data: {
-          ticketsSold: { increment: qty },
-        },
-      });
-
-      return created;
+    // Increment event ticketsSold
+    await prisma.event.update({
+      where: { id: event.id },
+      data: {
+        ticketsSold: { increment: qty },
+      },
     });
 
     return NextResponse.json(

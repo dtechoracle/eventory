@@ -14,10 +14,60 @@ import {
 } from 'lucide-react';
 
 export default function VendorProfileClient({ id }: { id: string }) {
-  const { vendors, requestVendorQuote, checkInGuest } = useEventory();
+  const { vendors, requestVendorQuote, checkInGuest, currentUser } = useEventory();
   const [isScannerOpen, setIsScannerOpen] = useState(false);
 
-  const vendor = vendors.find((v) => v.id === id);
+  const normalize = (val: string) => val.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  const vendorFromContext = vendors.find(
+    (v) => v.id === id || v.slug === id || normalize(v.businessName) === normalize(id)
+  );
+  const [vendor, setVendor] = useState<typeof vendorFromContext>(vendorFromContext);
+  const [isFetching, setIsFetching] = useState(!vendorFromContext);
+
+  React.useEffect(() => {
+    if (vendorFromContext) {
+      setVendor(vendorFromContext);
+      setIsFetching(false);
+      return;
+    }
+
+    let isMounted = true;
+    async function loadVendor() {
+      try {
+        const res = await fetch('/api/marketplace');
+        if (res.ok) {
+          const json = await res.json();
+          if (json.data && Array.isArray(json.data) && isMounted) {
+            const found = json.data.find(
+              (v: any) => v.id === id || v.slug === id || normalize(v.businessName) === normalize(id)
+            );
+            if (found) setVendor(found);
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to load vendor:', err);
+      } finally {
+        if (isMounted) setIsFetching(false);
+      }
+    }
+    loadVendor();
+
+    return () => { isMounted = false; };
+  }, [id, vendorFromContext]);
+
+  if (isFetching && !vendor) {
+    return (
+      <div className="min-h-screen bg-white flex flex-col font-sans">
+        <Navbar onOpenGateScanner={() => setIsScannerOpen(true)} />
+        <div className="flex-1 max-w-7xl mx-auto px-4 py-20 flex flex-col items-center justify-center">
+          <div className="w-10 h-10 border-4 border-[#301d6e] border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-xs text-slate-500 mt-4 font-bold">Loading vendor profile from Neon DB...</p>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
   if (!vendor) {
     notFound();
   }
@@ -25,11 +75,11 @@ export default function VendorProfileClient({ id }: { id: string }) {
   // Quote form state
   const [eventType, setEventType] = useState('Wedding Reception');
   const [eventDate, setEventDate] = useState('2027-12-15');
-  const [guestCount, setGuestCount] = useState(450);
+  const [guestCount, setGuestCount] = useState(250);
   const [requirements, setRequirements] = useState('');
-  const [contactName, setContactName] = useState('Stephen Adeleke');
-  const [contactPhone, setContactPhone] = useState('+234 803 234 5678');
-  const [contactEmail, setContactEmail] = useState('stephen.a@adeleke.ng');
+  const [contactName, setContactName] = useState(currentUser.name || '');
+  const [contactPhone, setContactPhone] = useState(currentUser.phone || '');
+  const [contactEmail, setContactEmail] = useState(currentUser.email || '');
   const [selectedPackageId, setSelectedPackageId] = useState<string>(vendor.packages?.[0]?.id || '');
   const [isSubmitted, setIsSubmitted] = useState(false);
 
@@ -116,12 +166,12 @@ export default function VendorProfileClient({ id }: { id: string }) {
               </div>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/10 text-left md:text-right shrink-0">
-              <span className="text-[10px] uppercase font-bold tracking-wider text-purple-200 block">Indicative Starting Rate</span>
-              <span className="text-2xl font-black text-[#8ec82d]">
+            <div className="bg-white p-5 rounded-2xl border border-slate-200 text-slate-900 text-left md:text-right shrink-0 shadow-sm">
+              <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Indicative Starting Rate</span>
+              <span className="text-2xl font-black text-[#301d6e]">
                 From {formatNaira(vendor.priceFrom)}
               </span>
-              <span className="text-[11px] text-slate-300 block mt-0.5">Custom scope & milestone payments</span>
+              <span className="text-[11px] text-emerald-600 font-semibold block mt-0.5">✓ Escrow Milestone Protection</span>
             </div>
           </div>
         </div>

@@ -15,10 +15,10 @@ export default function DashboardBoxOfficePage() {
   const checkedInCount = workspace.guests.filter((g) => g.checkedIn).length;
   const totalGuests = workspace.guests.length;
 
-  const handleManualCheckIn = (e: React.FormEvent) => {
+  const handleManualCheckIn = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!ticketInput.trim()) return;
-    const res = checkInGuest(ticketInput.trim());
+    const res = await checkInGuest(ticketInput.trim());
     setVerifyMessage(res.message);
     setTicketInput('');
     setTimeout(() => setVerifyMessage(null), 5000);

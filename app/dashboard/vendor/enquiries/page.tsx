@@ -8,7 +8,7 @@ import { VendorEnquiry } from '../../../../types';
 import { Send, Clock, CheckCircle2, User, Phone, Mail, DollarSign, Calendar, X } from 'lucide-react';
 
 export default function VendorEnquiriesPage() {
-  const { vendorEnquiries, respondToEnquiry, showToast } = useEventory();
+  const { vendorEnquiries, respondToEnquiry, showToast, toast } = useEventory();
   const [selectedEnquiry, setSelectedEnquiry] = useState<VendorEnquiry | null>(null);
   const [quoteAmount, setQuoteAmount] = useState<number>(0);
   const [quoteNotes, setQuoteNotes] = useState('');
@@ -16,7 +16,7 @@ export default function VendorEnquiriesPage() {
   const handleSendQuote = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedEnquiry || quoteAmount <= 0) {
-      alert('Please enter a valid quotation amount.');
+      toast.warning('Invalid Quote Amount', 'Please enter a valid quotation amount in Naira.');
       return;
     }
     respondToEnquiry(selectedEnquiry.id, quoteAmount);

@@ -1,8 +1,6 @@
 import { INITIAL_EVENTS } from '../../../../data/mockData';
 import EventTicketsCheckoutPage from '../../../../components/EventTicketsCheckoutPage';
 
-export const instant = false;
-
 export function generateStaticParams() {
   return INITIAL_EVENTS.map((evt) => ({ id: evt.id }));
 }

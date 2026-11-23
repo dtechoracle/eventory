@@ -210,6 +210,7 @@ export const INITIAL_EVENTS: EventItem[] = [
 export const INITIAL_VENDORS: VendorItem[] = [
   {
     id: 'vnd-01',
+    slug: 'abc-events-royal-catering',
     businessName: 'ABC Events & Royal Catering',
     category: 'Catering',
     city: 'Abuja',
@@ -243,6 +244,7 @@ export const INITIAL_VENDORS: VendorItem[] = [
   },
   {
     id: 'vnd-02',
+    slug: 'the-sapphire-marquee-conference-palace',
     businessName: 'The Sapphire Marquee & Conference Palace',
     category: 'Venues',
     city: 'Abuja',
@@ -274,6 +276,7 @@ export const INITIAL_VENDORS: VendorItem[] = [
   },
   {
     id: 'vnd-03',
+    slug: 'lush-petals-ambient-luxe-decor',
     businessName: 'Lush Petals & Ambient Luxe Decor',
     category: 'Decoration',
     city: 'Abuja',
@@ -304,6 +307,7 @@ export const INITIAL_VENDORS: VendorItem[] = [
   },
   {
     id: 'vnd-04',
+    slug: 'krown-cinematic-media-studio',
     businessName: 'Krown Cinematic Media & Studio',
     category: 'Photography',
     city: 'Abuja',
@@ -333,6 +337,7 @@ export const INITIAL_VENDORS: VendorItem[] = [
   },
   {
     id: 'vnd-05',
+    slug: 'acoustic-waves-dj-blaze-pro-sound',
     businessName: 'Acoustic Waves & DJ Blaze Pro Sound',
     category: 'Sound & DJ',
     city: 'Abuja',
@@ -361,6 +366,7 @@ export const INITIAL_VENDORS: VendorItem[] = [
   },
   {
     id: 'vnd-06',
+    slug: 'shieldpro-vip-protection-security',
     businessName: 'ShieldPro VIP Protection & Security',
     category: 'Security',
     city: 'Abuja',
@@ -389,6 +395,7 @@ export const INITIAL_VENDORS: VendorItem[] = [
   },
   {
     id: 'vnd-07',
+    slug: 'royal-fleet-executive-bus-chauffeur',
     businessName: 'Royal Fleet Executive Bus & Chauffeur Services',
     category: 'Transportation',
     city: 'Abuja',
@@ -417,6 +424,7 @@ export const INITIAL_VENDORS: VendorItem[] = [
   },
   {
     id: 'vnd-08',
+    slug: 'elegance-elite-ushers-hostesses',
     businessName: 'Elegance Elite Ushers & Hostesses',
     category: 'Ushers & Support',
     city: 'Abuja',

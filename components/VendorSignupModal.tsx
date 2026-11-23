@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { X, Store, ShieldCheck, CheckCircle2, Upload, FileText, Sparkles, Building2 } from 'lucide-react';
 import { VendorItem } from '../types';
+import { useEventory } from '../context/EventoryContext';
 
 interface VendorSignupModalProps {
   isOpen: boolean;
@@ -11,22 +12,23 @@ interface VendorSignupModalProps {
 }
 
 export default function VendorSignupModal({ isOpen, onClose, onVendorRegistered }: VendorSignupModalProps) {
+  const { toast } = useEventory();
   if (!isOpen) return null;
 
   const [businessName, setBusinessName] = useState('');
   const [category, setCategory] = useState<VendorItem['category']>('Catering');
   const [city, setCity] = useState<VendorItem['city']>('Abuja');
   const [address, setAddress] = useState('');
-  const [priceFrom, setPriceFrom] = useState(350000);
+  const [priceFrom, setPriceFrom] = useState<number>(100000);
   const [guestCapacity, setGuestCapacity] = useState('100 – 1,000 guests');
-  const [cacNumber, setCacNumber] = useState('RC-1849204');
+  const [cacNumber, setCacNumber] = useState('');
   const [description, setDescription] = useState('');
   const [isDone, setIsDone] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!businessName || !address) {
-      alert('Please fill in your business name and address.');
+      toast.warning('Business Details Required', 'Please fill in your business name and address.');
       return;
     }
 

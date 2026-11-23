@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { EventItem } from '../types';
 import { formatNaira, generateTicketCode } from '../lib/utils';
+import { useEventory } from '../context/EventoryContext';
 
 interface TicketModalProps {
   event: EventItem | null;
@@ -31,6 +32,7 @@ export default function TicketModal({
   onTicketPurchased,
   onOpenScannerWithTicket
 }: TicketModalProps) {
+  const { toast } = useEventory();
   if (!event) return null;
 
   // Checkout Steps (media_1792158192658.png: Tickets -> Contact -> Payment)
@@ -93,7 +95,7 @@ export default function TicketModal({
 
   const handleProceedToContact = () => {
     if (totalTicketsCount === 0) {
-      alert('Please select at least 1 ticket to proceed.');
+      toast.warning('No Tickets Selected', 'Please select at least 1 ticket to proceed.');
       return;
     }
     setCurrentStep('contact');
@@ -102,7 +104,7 @@ export default function TicketModal({
   const handleProceedToPayment = (e: React.FormEvent) => {
     e.preventDefault();
     if (!attendeeName.trim() || !attendeeEmail.trim()) {
-      alert('Please enter your full name and email address.');
+      toast.warning('Contact Info Required', 'Please enter your full name and email address.');
       return;
     }
     if (isFree) {
@@ -337,6 +339,9 @@ export default function TicketModal({
                   </button>
 
                   <div className="space-y-1">
+                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full inline-block">
+                      ✓ Instant Guest Checkout • No Account Required
+                    </span>
                     <h3 className="font-bold text-base text-slate-900">Contact Information</h3>
                     <p className="text-xs text-slate-500">
                       We'll send your digital tickets and entry pass to this email.

@@ -16,11 +16,19 @@ export default function SignupPage() {
   const [role, setRole] = useState<'attendee' | 'organiser' | 'vendor'>('organiser');
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage(null);
+
     if (!fullName || !email || !password) {
-      alert('Please fill in your name, email and password.');
+      setErrorMessage('Please fill in your name, email and password.');
+      return;
+    }
+
+    if (password.length < 6) {
+      setErrorMessage('Password must be at least 6 characters.');
       return;
     }
 
@@ -53,33 +61,9 @@ export default function SignupPage() {
         return;
       }
 
-      if (res.status === 409) {
-        alert(data.error || 'An account with this email already exists.');
-        return;
-      }
-
-      // Offline demo fallback
-      setCurrentUser({
-        id: `usr-${Date.now().toString().slice(-4)}`,
-        name: fullName,
-        email,
-        phone,
-        role: appRole,
-        organizationName: `${fullName}'s Organization`,
-      });
-      showToast(`Welcome to Eventory, ${fullName}!`);
-      router.push(appRole === 'creator' ? '/dashboard/events' : '/dashboard/vendor');
+      setErrorMessage(data.error || 'Failed to create account. Please try again.');
     } catch {
-      setCurrentUser({
-        id: `usr-${Date.now().toString().slice(-4)}`,
-        name: fullName,
-        email,
-        phone,
-        role: appRole,
-        organizationName: `${fullName}'s Organization`,
-      });
-      showToast(`Welcome to Eventory, ${fullName}!`);
-      router.push(appRole === 'creator' ? '/dashboard/events' : '/dashboard/vendor');
+      setErrorMessage('Unable to connect to the authentication server. Please check your network.');
     } finally {
       setIsSubmitting(false);
     }
@@ -111,6 +95,13 @@ export default function SignupPage() {
               Join Nigeria's unified event ecosystem
             </p>
           </div>
+
+          {/* Error Message Alert */}
+          {errorMessage && (
+            <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold">
+              {errorMessage}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             

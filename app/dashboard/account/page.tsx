@@ -1,29 +1,48 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../../../components/dashboard/DashboardLayout';
 import { useEventory } from '../../../context/EventoryContext';
 import { User, Building2, Mail, Phone, ShieldCheck, Check, Sparkles } from 'lucide-react';
 
 export default function DashboardAccountPage() {
   const { currentUser, setCurrentUser, showToast } = useEventory();
-  const [name, setName] = useState(currentUser.name || 'Ezekiel Adeleke');
-  const [orgName, setOrgName] = useState(currentUser.organizationName || 'Eventory Nexus Limited');
-  const [email, setEmail] = useState(currentUser.email || 'ezekiel@eventory.nexus');
-  const [phone, setPhone] = useState(currentUser.phone || '+234 803 123 4567');
+  const [name, setName] = useState(currentUser.name || '');
+  const [orgName, setOrgName] = useState(currentUser.organizationName || '');
+  const [email, setEmail] = useState(currentUser.email || '');
+  const [phone, setPhone] = useState(currentUser.phone || '');
   const [bankName, setBankName] = useState('Zenith Bank');
   const [accountNumber, setAccountNumber] = useState('1012345678');
   const [accountName, setAccountName] = useState('Eventory Nexus Ltd');
 
-  const handleSave = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (currentUser.name) setName(currentUser.name);
+    if (currentUser.organizationName) setOrgName(currentUser.organizationName);
+    if (currentUser.email) setEmail(currentUser.email);
+    if (currentUser.phone) setPhone(currentUser.phone);
+  }, [currentUser]);
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    setCurrentUser((prev) => ({
-      ...prev,
-      name,
-      organizationName: orgName,
-      email,
-      phone
-    }));
+    try {
+      const res = await fetch('/api/user/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          organizationName: orgName,
+          phone,
+        }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.user) {
+          setCurrentUser(json.user);
+        }
+      }
+    } catch (err) {
+      console.warn('Profile save offline sync:', err);
+    }
     showToast('✓ Organiser profile & payout details saved!');
   };
 

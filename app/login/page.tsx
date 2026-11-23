@@ -1,32 +1,38 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEventory } from '../../context/EventoryContext';
 import { 
   Eye, EyeOff, ShieldCheck, ArrowRight, Calendar, 
-  Store, CheckCircle2, ChevronRight 
+  Store, CheckCircle2, ChevronRight, AlertCircle, KeyRound 
 } from 'lucide-react';
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
-  const { setCurrentUser, setCurrentUserRole, showToast } = useEventory();
+  const searchParams = useSearchParams();
+  const redirectUrl = searchParams.get('redirect');
+
+  const { setCurrentUser, showToast } = useEventory();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleQuickAccess = (role: 'creator' | 'vendor' | 'attendee', targetPath: string, label: string) => {
-    setCurrentUserRole(role);
-    showToast(`✓ Accessing ${label}...`);
-    router.push(targetPath);
+  const handleFillDemo = (demoEmail: string) => {
+    setEmail(demoEmail);
+    setPassword('Password123!');
+    setErrorMessage(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage(null);
+
     if (!email || !password) {
-      alert('Please enter your email and password.');
+      setErrorMessage('Please enter both your email and password.');
       return;
     }
 
@@ -39,10 +45,14 @@ export default function LoginPage() {
       });
 
       const data = await res.json();
+
       if (res.ok && data.user) {
         setCurrentUser(data.user);
         showToast(`Welcome back, ${data.user.name}!`);
-        if (data.user.role === 'vendor') {
+
+        if (redirectUrl && redirectUrl.startsWith('/dashboard')) {
+          router.push(redirectUrl);
+        } else if (data.user.role === 'vendor') {
           router.push('/dashboard/vendor');
         } else {
           router.push('/dashboard/events');
@@ -50,28 +60,123 @@ export default function LoginPage() {
         return;
       }
 
-      // If database not yet seeded or credentials mismatch, fallback gracefully
-      if (res.status === 401) {
-        alert(data.error || 'Invalid email or password.');
-      } else {
-        // Fallback for offline demo mode
-        setCurrentUserRole('creator');
-        showToast('Signed in to Event Creator Studio.');
-        router.push('/dashboard/events');
-      }
+      setErrorMessage(data.error || 'Invalid email or password.');
     } catch {
-      // Offline fallback
-      setCurrentUserRole('creator');
-      router.push('/dashboard/events');
+      setErrorMessage('Unable to connect to the authentication server. Please check your network.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
+    <div className="w-full max-w-lg mx-auto py-6 space-y-6">
+      <div className="space-y-1">
+        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+          Sign In to Eventory
+        </h1>
+        <p className="text-xs sm:text-sm text-slate-500 font-medium">
+          Access your event creator studio, vendor contracts, or ticket bookings.
+        </p>
+      </div>
+
+      {/* Error Message Alert */}
+      {errorMessage && (
+        <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2.5">
+          <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+          <div className="font-semibold">{errorMessage}</div>
+        </div>
+      )}
+
+      {/* Demo Credentials Quick Fill (Fills input fields for real authentication) */}
+      <div className="p-4 rounded-xl bg-purple-50/60 border border-purple-100 space-y-2">
+        <div className="flex items-center gap-2 text-xs font-bold text-[#301d6e]">
+          <KeyRound className="w-4 h-4 text-[#8ec82d]" />
+          <span>Need demo credentials? Fill fields below:</span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+          <button
+            type="button"
+            onClick={() => handleFillDemo('creator@eventory.ng')}
+            className="px-3 py-2 bg-white rounded-lg border border-purple-200 hover:border-[#301d6e] text-left transition-all cursor-pointer shadow-2xs"
+          >
+            <span className="text-[11px] font-bold text-[#301d6e] block">Event Creator</span>
+            <span className="text-[10px] text-slate-500 font-mono block">creator@eventory.ng</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => handleFillDemo('vendor@eventory.ng')}
+            className="px-3 py-2 bg-white rounded-lg border border-purple-200 hover:border-[#301d6e] text-left transition-all cursor-pointer shadow-2xs"
+          >
+            <span className="text-[11px] font-bold text-[#301d6e] block">Vendor Partner</span>
+            <span className="text-[10px] text-slate-500 font-mono block">vendor@eventory.ng</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Standard Form */}
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-1">
+          <label className="block text-xs font-bold text-slate-700">
+            * Email address
+          </label>
+          <input
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="name@example.com"
+            className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#301d6e] transition-all"
+          />
+        </div>
+
+        <div className="space-y-1">
+          <label className="block text-xs font-bold text-slate-700">
+            * Password
+          </label>
+          <div className="relative">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password"
+              className="w-full pl-4 pr-11 py-2.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#301d6e] transition-all"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
+              aria-label="Toggle password visibility"
+            >
+              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full py-3 bg-[#301d6e] hover:bg-[#20134e] text-white font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-xs cursor-pointer disabled:opacity-70"
+        >
+          {isSubmitting ? 'Authenticating with Neon DB...' : 'Sign in to Dashboard'}
+        </button>
+
+        <div className="pt-1 text-xs text-center text-slate-500">
+          New to Eventory?{' '}
+          <Link href="/signup" className="font-bold text-[#301d6e] hover:underline">
+            Create an account
+          </Link>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
     <div className="min-h-screen w-full bg-white flex flex-col lg:flex-row font-sans">
       
-      {/* LEFT COLUMN: Portals & Clean Auth Form (Full 50% on Desktop, perfectly centered) */}
+      {/* LEFT COLUMN: Clean Auth Form (Full 50% on Desktop, perfectly centered) */}
       <div className="w-full lg:w-1/2 min-h-screen flex flex-col justify-between p-6 sm:p-10 lg:p-12 xl:p-16 overflow-y-auto">
         
         {/* Brand Logo */}
@@ -84,135 +189,14 @@ export default function LoginPage() {
           </Link>
         </div>
 
-        {/* Portals & Form Body */}
-        <div className="w-full max-w-lg mx-auto py-6 space-y-6">
-          <div className="space-y-1">
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-              Sign In & Dashboard Portals
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-500 font-medium">
-              Choose your dashboard section below for instant access, or sign in with your credentials.
-            </p>
+        {/* Form Body wrapped in Suspense for useSearchParams */}
+        <Suspense fallback={
+          <div className="w-full max-w-lg mx-auto py-12 flex justify-center">
+            <div className="w-8 h-8 border-2 border-[#301d6e] border-t-transparent rounded-full animate-spin"></div>
           </div>
-
-          {/* QUICK DASHBOARD ACCESS BUTTONS (Requested by user: 1-click access to all dashboard sections!) */}
-          <div className="space-y-3">
-            <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
-              Direct Dashboard Access (All Sections)
-            </span>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {/* 1. Creator Dashboard */}
-              <button
-                type="button"
-                onClick={() => handleQuickAccess('creator', '/dashboard/events', 'Event Creator Studio')}
-                className="p-3.5 rounded-xl border border-slate-200 hover:border-[#301d6e] bg-slate-50/70 hover:bg-purple-50/40 text-left transition-all group cursor-pointer flex flex-col justify-between"
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <div className="w-7 h-7 rounded-lg bg-[#301d6e] text-white flex items-center justify-center">
-                    <Calendar className="w-4 h-4 text-[#8ec82d]" />
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-[#301d6e] group-hover:translate-x-0.5 transition-all" />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-slate-900 group-hover:text-[#301d6e] transition-colors">
-                    Events Creator
-                  </h4>
-                  <span className="text-[10px] text-slate-500 block">
-                    /dashboard/events
-                  </span>
-                </div>
-              </button>
-
-              {/* 2. Vendor Hub */}
-              <button
-                type="button"
-                onClick={() => handleQuickAccess('vendor', '/dashboard/vendor', 'Vendor Hub')}
-                className="p-3.5 rounded-xl border border-slate-200 hover:border-[#301d6e] bg-slate-50/70 hover:bg-purple-50/40 text-left transition-all group cursor-pointer flex flex-col justify-between"
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <div className="w-7 h-7 rounded-lg bg-[#301d6e] text-white flex items-center justify-center">
-                    <Store className="w-4 h-4 text-[#8ec82d]" />
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-[#301d6e] group-hover:translate-x-0.5 transition-all" />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-slate-900 group-hover:text-[#301d6e] transition-colors">
-                    Vendor Business Hub
-                  </h4>
-                  <span className="text-[10px] text-slate-500 block">
-                    /dashboard/vendor
-                  </span>
-                </div>
-              </button>
-            </div>
-          </div>
-
-          {/* Divider */}
-          <div className="relative flex items-center justify-center my-4">
-            <div className="border-t border-slate-200 w-full"></div>
-            <span className="bg-white px-3 text-[11px] font-bold uppercase text-slate-400 shrink-0">
-              Or sign in with email
-            </span>
-          </div>
-
-          {/* Standard Form */}
-          <form onSubmit={handleSubmit} className="space-y-3.5">
-            <div className="space-y-1">
-              <label className="block text-xs font-bold text-slate-700">
-                * Email address
-              </label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@example.com"
-                className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#301d6e] transition-all"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="block text-xs font-bold text-slate-700">
-                * Password
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
-                  className="w-full pl-4 pr-11 py-2.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#301d6e] transition-all"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
-                  aria-label="Toggle password visibility"
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full py-3 bg-[#301d6e] hover:bg-[#20134e] text-white font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-xs cursor-pointer"
-            >
-              {isSubmitting ? 'Signing in...' : 'Sign in to Dashboard'}
-            </button>
-
-            <div className="pt-1 text-xs text-center text-slate-500">
-              New to Eventory?{' '}
-              <Link href="/signup" className="font-bold text-[#301d6e] hover:underline">
-                Create an account
-              </Link>
-            </div>
-          </form>
-
-        </div>
+        }>
+          <LoginForm />
+        </Suspense>
 
         {/* Footer info */}
         <div className="w-full max-w-lg mx-auto text-[11px] text-slate-400 pt-3">

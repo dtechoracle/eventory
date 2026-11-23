@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { X, Calendar, MapPin, Tag, Plus, CheckCircle2, DollarSign, Sparkles } from 'lucide-react';
 import { EventItem } from '../types';
+import { useEventory } from '../context/EventoryContext';
 
 interface CreateEventModalProps {
   isOpen: boolean;
@@ -11,6 +12,7 @@ interface CreateEventModalProps {
 }
 
 export default function CreateEventModal({ isOpen, onClose, onEventCreated }: CreateEventModalProps) {
+  const { toast } = useEventory();
   if (!isOpen) return null;
 
   const [title, setTitle] = useState('');
@@ -30,7 +32,7 @@ export default function CreateEventModal({ isOpen, onClose, onEventCreated }: Cr
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !venue || !organizer) {
-      alert('Please fill in the required event fields.');
+      toast.warning('Event Details Missing', 'Please fill in the title, venue, and organizer fields.');
       return;
     }
 

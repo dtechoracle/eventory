@@ -15,7 +15,7 @@ import {
 
 export default function CreateEventPage() {
   const router = useRouter();
-  const { currentUser, createEvent, showToast } = useEventory();
+  const { currentUser, createEvent, showToast, toast } = useEventory();
 
   // Stepper state: 'details' | 'appearance' | 'tickets'
   const [currentStep, setCurrentStep] = useState<'details' | 'appearance' | 'tickets'>('details');
@@ -124,7 +124,7 @@ export default function CreateEventPage() {
 
   const handleRemoveTier = (id: string) => {
     if (ticketTiers.length <= 1) {
-      alert('You must have at least one ticket tier.');
+      toast.warning('Ticket Tier Required', 'You must have at least one ticket tier.');
       return;
     }
     setTicketTiers(ticketTiers.filter((t) => t.id !== id));
@@ -133,7 +133,7 @@ export default function CreateEventPage() {
   const handleProceedToAppearance = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!eventName.trim()) {
-      alert('Please provide an event name.');
+      toast.warning('Event Name Required', 'Please provide an event name first.');
       return;
     }
     setCurrentStep('appearance');
@@ -147,7 +147,7 @@ export default function CreateEventPage() {
 
   const handlePublishEvent = () => {
     if (ticketTiers.length === 0) {
-      alert('Please configure at least one ticket tier.');
+      toast.warning('Ticket Tiers Missing', 'Please configure at least one ticket tier.');
       return;
     }
 
@@ -158,7 +158,7 @@ export default function CreateEventPage() {
       id: createdId,
       title: eventName,
       slug: customSlug || eventName.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 50),
-      organizer: currentUser.name || 'Ezekiel Adeleke',
+      organizer: currentUser.name || 'Event Host',
       organizerVerified: true,
       category: (selectedCategories[0] as any) || 'Conference',
       date: `${startDate} (${scheduleType === 'single' ? 'Single Event' : 'Recurring'})`,
@@ -212,7 +212,7 @@ export default function CreateEventPage() {
             <button
               onClick={() => {
                 if (!eventName.trim()) {
-                  alert('Please enter event name first.');
+                  toast.warning('Event Name Required', 'Please enter your event name first.');
                   return;
                 }
                 setCurrentStep('appearance');
@@ -228,7 +228,7 @@ export default function CreateEventPage() {
             <button
               onClick={() => {
                 if (!eventName.trim()) {
-                  alert('Please enter event name first.');
+                  toast.warning('Event Name Required', 'Please enter your event name first.');
                   return;
                 }
                 setCurrentStep('tickets');
@@ -256,7 +256,7 @@ export default function CreateEventPage() {
             {/* Header Greeting */}
             <div className="space-y-1">
               <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-                Hi {currentUser.name ? currentUser.name.split(' ')[0] : 'Ezekiel'},
+                Hi {currentUser.name ? currentUser.name.split(' ')[0] : 'Creator'},
               </h1>
               <p className="text-xs sm:text-sm text-slate-500 font-medium">
                 Let's start with the basics

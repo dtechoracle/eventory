@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { Store, Star, MapPin, Users, ShieldCheck, Clock, Check, Send, Sparkles, Filter, Search, ArrowRight } from 'lucide-react';
 import { VendorItem } from '../types';
 import { formatNaira } from '../lib/utils';
@@ -140,11 +141,11 @@ export default function MarketplaceSection({
             >
               <div>
                 {/* Vendor Image Banner */}
-                <div className="relative h-44 w-full bg-slate-100 overflow-hidden">
+                <Link href={`/marketplace/${vendor.slug || vendor.id}`} className="block relative h-44 w-full bg-slate-100 overflow-hidden group">
                   <img
                     src={vendor.image}
                     alt={vendor.businessName}
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
 
@@ -171,13 +172,15 @@ export default function MarketplaceSection({
                     <span>{vendor.rating}</span>
                     <span className="text-slate-300 text-[10px] font-normal">({vendor.reviewsCount} reviews)</span>
                   </div>
-                </div>
+                </Link>
 
                 {/* Vendor Details */}
                 <div className="p-4 space-y-2.5">
-                  <h3 className="font-black text-sm text-slate-900 line-clamp-1 hover:text-[#301d6e]">
-                    {vendor.businessName}
-                  </h3>
+                  <Link href={`/marketplace/${vendor.slug || vendor.id}`}>
+                    <h3 className="font-black text-sm text-slate-900 line-clamp-1 hover:text-[#301d6e] transition-colors">
+                      {vendor.businessName}
+                    </h3>
+                  </Link>
 
                   <p className="text-xs text-slate-500 flex items-center gap-1 line-clamp-1">
                     <MapPin className="w-3 h-3 text-[#301d6e] shrink-0" />
@@ -225,10 +228,10 @@ export default function MarketplaceSection({
 
                 <button
                   onClick={() => onRequestQuote(vendor)}
-                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-[#301d6e] hover:bg-[#20134e] text-white shadow-xs transition-all hover:scale-105 border-b-2 border-[#8ec82d]"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-[#301d6e] hover:bg-[#20134e] text-white shadow-xs transition-all hover:scale-105 border-b-2 border-[#8ec82d]"
                 >
                   <Send className="w-3 h-3 text-[#8ec82d]" />
-                  <span>Request Quote</span>
+                  <span>Request</span>
                 </button>
               </div>
             </div>

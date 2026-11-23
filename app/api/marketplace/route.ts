@@ -39,7 +39,12 @@ export async function GET(req: NextRequest) {
       orderBy: { rating: 'desc' },
     });
 
-    return NextResponse.json({ success: true, count: vendors.length, data: vendors });
+    const mappedVendors = vendors.map((v) => ({
+      ...v,
+      slug: v.businessName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
+    }));
+
+    return NextResponse.json({ success: true, count: mappedVendors.length, data: mappedVendors });
   } catch (error: any) {
     console.error('Fetch vendors error:', error);
     return NextResponse.json(

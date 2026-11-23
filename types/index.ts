@@ -56,6 +56,7 @@ export interface VendorReview {
 
 export interface VendorItem {
   id: string;
+  slug?: string;
   businessName: string;
   category: 'Venues' | 'Catering' | 'Decoration' | 'Photography' | 'Sound & DJ' | 'Security' | 'Transportation' | 'Ushers & Support' | 'MCs' | 'Event Planning';
   city: 'Abuja' | 'Lagos' | 'Port Harcourt';

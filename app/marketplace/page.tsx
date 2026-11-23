@@ -95,31 +95,41 @@ export default function MarketplacePage() {
     <div className="min-h-screen bg-white flex flex-col font-sans w-full overflow-x-hidden">
       <Navbar onOpenGateScanner={() => setIsScannerOpen(true)} />
 
-      {/* Marketplace Photographic Hero Banner (Brand #301d6e, NO grey) */}
-      <div className="relative w-full bg-[#301d6e] py-12 sm:py-16 overflow-hidden">
-        <img
-          src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=2000&q=80"
-          alt="Event Venues and Verified Vendors"
-          className="absolute inset-0 w-full h-full object-cover opacity-25"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#1b0e42]/95 via-[#301d6e]/90 to-[#301d6e]/60"></div>
-
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Solid Brand Hero Banner (No transparent glass, sharp high contrast) */}
+      <div className="w-full bg-[#301d6e] py-12 sm:py-16 border-b border-[#20134e]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div className="max-w-2xl space-y-3">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-white text-xs font-semibold">
+                <span className="w-2 h-2 rounded-full bg-[#8ec82d] animate-pulse"></span>
+                <span>Verified Nigerian Vendor Ecosystem</span>
+              </div>
               <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
                 Hire trusted event professionals in Nigeria
               </h1>
               <p className="text-xs sm:text-sm text-purple-100 leading-relaxed max-w-xl">
-                Connect with verified caterers, decorators, photographers, venues and DJs in Abuja and Lagos with milestone escrow protection.
+                Connect directly with CAC-verified caterers, decorators, photographers, venues and DJs in Abuja and Lagos with milestone escrow protection.
               </p>
+              <div className="flex flex-wrap items-center gap-4 pt-1 text-xs text-purple-200">
+                <span className="flex items-center gap-1.5 font-medium text-white">
+                  <ShieldCheck className="w-4 h-4 text-[#8ec82d]" /> 100% Escrow Protection
+                </span>
+                <span>•</span>
+                <span className="flex items-center gap-1.5 font-medium text-white">
+                  <Check className="w-4 h-4 text-[#8ec82d]" /> CAC Corporate Verified
+                </span>
+                <span>•</span>
+                <span className="flex items-center gap-1.5 font-medium text-white">
+                  <Clock className="w-4 h-4 text-[#8ec82d]" /> Direct Quote Turnaround
+                </span>
+              </div>
             </div>
 
             <button
               onClick={() => setIsVendorSignupOpen(true)}
-              className="flex items-center gap-2 px-5 py-3 rounded-xl text-xs font-black bg-[#8ec82d] hover:bg-[#7eb524] text-[#1e1144] shadow-md transition-all shrink-0 cursor-pointer self-start md:self-auto"
+              className="flex items-center gap-2 px-6 py-3.5 rounded-xl text-xs font-black bg-[#8ec82d] hover:bg-[#7eb524] text-[#1e1144] shadow-md transition-all shrink-0 cursor-pointer self-start md:self-auto uppercase tracking-wider"
             >
-              <Plus className="w-4 h-4 text-[#1e1144]" />
+              <Plus className="w-4 h-4 text-[#1e1144] stroke-[3]" />
               <span>List Your Service</span>
             </button>
           </div>
@@ -240,7 +250,7 @@ export default function MarketplacePage() {
               >
                 <div>
                   {/* Image */}
-                  <Link href={`/marketplace/${vendor.id}`} className="block relative h-48 w-full bg-slate-100 overflow-hidden group">
+                  <Link href={`/marketplace/${vendor.slug || vendor.id}`} className="block relative h-48 w-full bg-slate-100 overflow-hidden group">
                     <img
                       src={vendor.image}
                       alt={vendor.businessName}
@@ -272,7 +282,7 @@ export default function MarketplacePage() {
 
                   {/* Details */}
                   <div className="p-4 space-y-2.5">
-                    <Link href={`/marketplace/${vendor.id}`}>
+                    <Link href={`/marketplace/${vendor.slug || vendor.id}`}>
                       <h3 className="font-bold text-sm sm:text-base text-slate-900 line-clamp-1 hover:text-[#301d6e] transition-colors">
                         {vendor.businessName}
                       </h3>
@@ -323,16 +333,16 @@ export default function MarketplacePage() {
 
                   <div className="flex items-center gap-2">
                     <Link
-                      href={`/marketplace/${vendor.id}`}
+                      href={`/marketplace/${vendor.slug || vendor.id}`}
                       className="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors"
                     >
                       View
                     </Link>
                     <button
                       onClick={() => setSelectedVendorForQuote(vendor)}
-                      className="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-[#301d6e] hover:bg-[#20134e] text-white transition-colors cursor-pointer"
+                      className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#301d6e] hover:bg-[#20134e] text-white transition-colors cursor-pointer flex items-center gap-1"
                     >
-                      Request Quote
+                      <span>Request</span>
                     </button>
                   </div>
                 </div>
@@ -367,17 +377,6 @@ export default function MarketplacePage() {
         <QuoteModal
           vendor={selectedVendorForQuote}
           onClose={() => setSelectedVendorForQuote(null)}
-          onSubmitQuote={(q) => {
-            requestVendorQuote(selectedVendorForQuote, {
-              eventType: 'Event Scope Request',
-              date: '2027-12-15',
-              guestCount: 250,
-              requirements: q.details,
-              contactName: 'Event Organizer',
-              phone: '+234 800 000 0000',
-              email: 'organizer@eventory.ng'
-            });
-          }}
         />
       )}
 

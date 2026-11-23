@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
 
 export default function TicketsRedirectPage() {
-  redirect('/events');
+  redirect('/dashboard/box-office');
 }
