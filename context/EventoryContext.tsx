@@ -606,15 +606,17 @@ export function EventoryProvider({ children }: { children: React.ReactNode }) {
       });
       if (res.ok) {
         await refreshData();
-        showToast(`🎉 "${newEvent.title}" published to Neon database!`);
+        showToast(`🎉 "${newEvent.title}" published!`);
+        return;
+      } else {
+        const errJson = await res.json().catch(() => ({}));
+        showToast(errJson.error || 'Failed to publish event.', 'error');
         return;
       }
     } catch (e) {
       console.warn('Backend event creation error:', e);
+      showToast('Connection error while creating event.', 'error');
     }
-
-    setEvents((prev) => [newEvent, ...prev]);
-    showToast(`🎉 "${newEvent.title}" published!`);
   };
 
   // Register Vendor via live Neon DB endpoint
