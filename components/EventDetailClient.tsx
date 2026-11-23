@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 
 export default function EventDetailClient({ id }: { id: string }) {
-  const { events, purchaseTicket, checkInGuest, toast } = useEventory();
+  const { events, purchaseTicket, checkInGuest, toast, currentUser } = useEventory();
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
@@ -114,18 +114,85 @@ export default function EventDetailClient({ id }: { id: string }) {
               </div>
             </div>
 
-            {/* Prominent "Get a Ticket" Button (Navigates to dedicated tickets & checkout page) */}
-            <Link
-              href={`/events/${event.id}/tickets`}
-              className="w-full py-4 bg-[#301d6e] hover:bg-[#20134e] text-white font-black text-sm uppercase tracking-wider rounded-xl shadow-md transition-all duration-150 flex items-center justify-center gap-2 border-b-4 border-[#8ec82d]"
-            >
-              <Ticket className="w-4 h-4 text-[#8ec82d]" />
-              <span>Get a Ticket</span>
-            </Link>
-            <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-500 font-medium">
-              <Check className="w-3.5 h-3.5 text-[#8ec82d]" />
-              <span>Instant guest checkout • No account needed</span>
-            </div>
+            {/* Check if current user is event owner */}
+            {currentUser && currentUser.role === 'creator' && (
+              (event.userId && currentUser.id && event.userId === currentUser.id) ||
+              (event.organizer && currentUser.name && event.organizer.toLowerCase().trim() === currentUser.name.toLowerCase().trim()) ||
+              (event.organizer && currentUser.organizationName && event.organizer.toLowerCase().trim() === currentUser.organizationName.toLowerCase().trim())
+            ) ? (
+              /* HOST / CREATOR ACTION PANEL */
+              <div className="space-y-3 p-5 rounded-2xl bg-purple-50/70 border border-purple-200 shadow-2xs">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-[#301d6e] text-white flex items-center justify-center font-bold text-sm shadow-xs shrink-0">
+                    👑
+                  </div>
+                  <div>
+                    <span className="text-[10px] uppercase font-black tracking-wider text-[#301d6e] block">
+                      Event Host Control
+                    </span>
+                    <h4 className="text-sm font-black text-slate-900 leading-tight">
+                      You Organized This Event
+                    </h4>
+                  </div>
+                </div>
+
+                <p className="text-[11px] text-slate-600 leading-relaxed">
+                  You are viewing your own published experience. Access attendee contact info, track ticket receipts, or launch door scanners:
+                </p>
+
+                <div className="space-y-2 pt-1">
+                  <Link
+                    href={`/dashboard/tickets?eventId=${event.id}`}
+                    className="w-full py-3 bg-[#301d6e] hover:bg-[#20134e] text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 border-b-2 border-[#8ec82d]"
+                  >
+                    <Users className="w-4 h-4 text-[#8ec82d]" />
+                    <span>View Ticket Buyers & Attendees</span>
+                  </Link>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <Link
+                      href="/dashboard/box-office"
+                      className="py-2.5 px-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-800 font-bold text-xs text-center transition-colors flex items-center justify-center gap-1.5 shadow-2xs"
+                    >
+                      <ShieldCheck className="w-3.5 h-3.5 text-[#301d6e]" />
+                      <span>Gate Scanner</span>
+                    </Link>
+
+                    <Link
+                      href="/dashboard/events"
+                      className="py-2.5 px-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-800 font-bold text-xs text-center transition-colors flex items-center justify-center gap-1.5 shadow-2xs"
+                    >
+                      <Calendar className="w-3.5 h-3.5 text-[#301d6e]" />
+                      <span>Events Studio</span>
+                    </Link>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-purple-100 text-center">
+                  <Link
+                    href={`/events/${event.id}/tickets`}
+                    className="text-[11px] text-slate-500 hover:text-[#301d6e] font-semibold underline"
+                  >
+                    Test attendee ticket checkout page →
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <>
+                {/* Prominent "Get a Ticket" Button for Attendees */}
+                <Link
+                  href={`/events/${event.id}/tickets`}
+                  className="w-full py-4 bg-[#301d6e] hover:bg-[#20134e] text-white font-black text-sm uppercase tracking-wider rounded-xl shadow-md transition-all duration-150 flex items-center justify-center gap-2 border-b-4 border-[#8ec82d]"
+                >
+                  <Ticket className="w-4 h-4 text-[#8ec82d]" />
+                  <span>Get a Ticket</span>
+                </Link>
+                <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-500 font-medium">
+                  <Check className="w-3.5 h-3.5 text-[#8ec82d]" />
+                  <span>Instant guest checkout • No account needed</span>
+                </div>
+              </>
+            )}
 
             {/* Host Information Quick Row */}
             <div className="flex items-center justify-between p-3.5 rounded-xl border border-slate-100 bg-white text-xs">

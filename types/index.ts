@@ -1,5 +1,6 @@
 export interface EventItem {
   id: string;
+  userId?: string;
   title: string;
   slug: string;
   organizer: string;

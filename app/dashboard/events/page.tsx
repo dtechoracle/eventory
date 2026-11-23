@@ -177,10 +177,16 @@ export default function DashboardEventsPage() {
                     {evt.date}
                   </p>
 
-                  {/* Ticket Sales Count */}
-                  <div className="pt-2 flex items-center gap-1.5 text-xs text-slate-600 font-medium">
-                    <Ticket className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                    <span>{evt.ticketsSold} {evt.ticketsSold === 1 ? 'Ticket' : 'Tickets'} Sold</span>
+                  {/* Ticket Sales Count & Direct Link to Attendees */}
+                  <div className="pt-2 flex items-center gap-3">
+                    <Link
+                      href={`/dashboard/tickets?eventId=${evt.id}`}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 text-xs font-bold text-[#301d6e] transition-colors"
+                      title="View buyers and attendees for this event"
+                    >
+                      <Ticket className="w-3.5 h-3.5 text-[#301d6e] shrink-0" />
+                      <span>{evt.ticketsSold} Sold • View Buyers</span>
+                    </Link>
                   </div>
                 </div>
 

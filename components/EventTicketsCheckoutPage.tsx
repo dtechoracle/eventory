@@ -17,7 +17,7 @@ import {
 
 export default function EventTicketsCheckoutPage({ id }: { id: string }) {
   const router = useRouter();
-  const { events, purchaseTicket, checkInGuest, toast } = useEventory();
+  const { events, purchaseTicket, checkInGuest, toast, currentUser } = useEventory();
   const [isScannerOpen, setIsScannerOpen] = useState(false);
 
   const eventFromContext = events.find((e) => e.id === id || e.slug === id);
@@ -228,6 +228,28 @@ export default function EventTicketsCheckoutPage({ id }: { id: string }) {
           </Link>
         </div>
       </header>
+
+      {/* Host Preview Notice */}
+      {currentUser && currentUser.role === 'creator' && event && (
+        (event.userId && currentUser.id && event.userId === currentUser.id) ||
+        (event.organizer && currentUser.name && event.organizer.toLowerCase().trim() === currentUser.name.toLowerCase().trim()) ||
+        (event.organizer && currentUser.organizationName && event.organizer.toLowerCase().trim() === currentUser.organizationName.toLowerCase().trim())
+      ) && currentStep !== 'confirmed' && (
+        <div className="bg-[#301d6e]/5 border-b border-[#301d6e]/20 px-4 py-2.5">
+          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+            <span className="font-semibold text-slate-700 flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-[#8ec82d]"></span>
+              <strong>Host Preview:</strong> You are viewing the public ticketing page for your own event.
+            </span>
+            <Link
+              href={`/dashboard/tickets?eventId=${event.id}`}
+              className="text-[#301d6e] hover:text-[#20134e] font-bold underline shrink-0"
+            >
+              Go to Ticket Buyers & Attendees Roster →
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* 2. STEPPER (Single line, no numbers, perfectly aligned on mobile and desktop) */}
       {currentStep !== 'confirmed' && (

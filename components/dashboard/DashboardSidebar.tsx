@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEventory } from '../../context/EventoryContext';
 import { 
   Calendar, Tag, Megaphone, QrCode, User, 
-  HelpCircle, LogOut, Store, X, Send, Briefcase 
+  HelpCircle, LogOut, Store, X, Send, Briefcase, Ticket, Users
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -38,9 +38,10 @@ export default function DashboardSidebar({ mobileOpen = false, onCloseMobile }: 
 
   const creatorNavLinks = [
     { href: '/dashboard/events', label: 'Events Studio', icon: Calendar },
+    { href: '/dashboard/tickets', label: 'Ticket Buyers & Attendees', icon: Ticket },
+    { href: '/dashboard/box-office', label: 'Box Office & Gate Scanner', icon: QrCode },
     { href: '/dashboard/discounts', label: 'Discounts', icon: Tag },
     { href: '/dashboard/marketing', label: 'Marketing', icon: Megaphone },
-    { href: '/dashboard/box-office', label: 'Box office', icon: QrCode },
     { href: '/dashboard/account', label: 'Account & Payouts', icon: User },
   ];
 
